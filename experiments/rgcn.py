@@ -204,6 +204,7 @@ def go(name='am1k', lr=0.0001, wd=0.01, epochs=50, prune=True, optimizer='adam')
     rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, numcls=data.num_classes)
 
     if torch.cuda.is_available():
+        print('Using cuda'.)
         rgcn.cuda()
 
         data.training = data.training.cuda()
