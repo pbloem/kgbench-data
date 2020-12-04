@@ -206,7 +206,7 @@ class RGCN(nn.Module):
 
         return self.comps1.pow(p).sum() + self.bases1.pow(p).sum()
 
-def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', final=False):
+def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', final=False, emb=16, bases=None):
 
     data = load(name, torch=True, prune_dist=2 if prune else None, final=final)
 
@@ -215,7 +215,7 @@ def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', f
     print(f'{data.num_relations} relations')
 
     tic()
-    rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, numcls=data.num_classes, bases=40)
+    rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, numcls=data.num_classes, emb=emb, bases=bases)
 
     if torch.cuda.is_available():
         print('Using cuda.')
