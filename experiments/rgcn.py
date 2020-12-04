@@ -206,9 +206,9 @@ class RGCN(nn.Module):
 
         return self.comps1.pow(p).sum() + self.bases1.pow(p).sum()
 
-def go(name='aifb', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam'):
+def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', final=False):
 
-    data = load(name, torch=True, prune_dist=2 if prune else None, final=True)
+    data = load(name, torch=True, prune_dist=2 if prune else None, final=final)
 
     print(f'{data.triples.size(0)} triples')
     print(f'{data.num_entities} entities')
