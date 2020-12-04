@@ -252,7 +252,6 @@ def go(name='aifb', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam'):
         loss.backward()
         opt.step()
 
-        print(out.mean().item(), out.std().item())
         print(f'epoch {e:02}: loss {loss:.2}, train acc {training_acc:.2}, \t withheld acc {withheld_acc:.2} \t ({toc():.5}s)')
 
 if __name__ == '__main__':
