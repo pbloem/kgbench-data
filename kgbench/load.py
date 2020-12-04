@@ -95,17 +95,61 @@ def load(name, final=False, torch=False, prune_dist=None):
      * i2r:
     """
 
-    if name == 'amfull':
-        data = Data(here('../datasets/amfull'), final=final, use_torch=torch)
-    elif name == 'am1k':
-        data =  Data(here('../datasets/am1k'), final=final, use_torch=torch)
+    if name == 'micro':
+        return micro(final, torch)
+
+    if name in ['aifb', 'am1k', 'amfull']:
+        data = Data(here(f'../datasets/{name}'), final=final, use_torch=torch)
     else:
         raise Exception(f'Dataset {name} not recognized.')
 
-    if prune is not None:
+    if prune_dist is not None:
         tic()
         data = prune(data, n=prune_dist)
         print(f'pruned ({toc():.4}s).')
+
+    return data
+
+def micro(final=True, use_torch=False):
+    """
+    Micro dataset for unit testing.
+
+    :return:
+    """
+
+    data = Data(None)
+
+    data.num_entities = 5
+    data.num_relations = 2
+    data.num_classes = 2
+
+    data.i2e = [str(i) for i in range(data.num_entities)]
+    data.i2r = [str(i) for i in range(data.num_entities)]
+
+    data.e2i = {i:e for e, i in enumerate(data.i2e)}
+    data.r2i = {i:r for r, i in enumerate(data.i2e)}
+
+    data.final = final
+    data.triples = np.asarray(
+        [[0, 0, 1], [1, 0, 2], [0, 0, 2], [2, 1, 3], [4, 1, 3], [4, 1, 0] ],
+        dtype=np.int
+    )
+
+    data.training = np.asarray(
+        [[1, 0], [2, 0]],
+        dtype=np.int
+    )
+
+    data.withheld = np.asarray(
+        [[3, 1], [3, 1]],
+        dtype=np.int
+    )
+
+    data.torch = use_torch
+    if torch: # this should be constant-time/memory
+        data.triples  = torch.from_numpy(data.triples)
+        data.training = torch.from_numpy(data.training)
+        data.withheld = torch.from_numpy(data.withheld)
 
     return data
 

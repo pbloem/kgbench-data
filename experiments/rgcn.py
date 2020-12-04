@@ -9,6 +9,23 @@ from torch import nn
 import torch.nn.functional as F
 from kgbench import load, tic, toc, d
 
+def enrich(triples : torch.Tensor, n : int, r: int):
+
+    cuda = triples.is_cuda
+
+    inverses = torch.cat([
+        triples[:, 2:],
+        triples[:, 1:2] + r,
+        triples[:, :1]
+    ], dim=1)
+
+    selfloops = torch.cat([
+        torch.arange(n, dtype=torch.long,  device=d(cuda))[:, None],
+        torch.full((n, 1), fill_value=2*r),
+        torch.arange(n, dtype=torch.long, device=d(cuda))[:, None],
+    ], dim=1)
+
+    return torch.cat([triples, inverses, selfloops], dim=0)
 
 def sum_sparse(indices, values, size, row=True):
     """
@@ -20,14 +37,13 @@ def sum_sparse(indices, values, size, row=True):
 
     ST = torch.cuda.sparse.FloatTensor if indices.is_cuda else torch.sparse.FloatTensor
 
-    assert len(indices.size()) == len(values.size()) + 1
     assert len(indices.size()) == 2
 
     k, r = indices.size()
 
     if not row:
         # transpose the matrix
-        indices = torch.cat([indices[:, 1:2], indices[:, 0:1]], dim=2)
+        indices = torch.cat([indices[:, 1:2], indices[:, 0:1]], dim=1)
         size = size[1], size[0]
 
     ones = torch.ones((size[1], 1), device=d(indices))
@@ -69,7 +85,6 @@ def adj(triples, num_nodes, num_rels, cuda=False, vertical=True):
         from_indices.append(fr)
         upto_indices.append(to)
 
-    tic()
     indices = torch.tensor([from_indices, upto_indices], dtype=torch.long, device=d(cuda))
 
     assert indices.size(1) == len(triples)
@@ -91,17 +106,17 @@ class RGCN(nn.Module):
         self.bases = bases
         self.numcls = numcls
 
+        self.triples = enrich(triples, n, r)
+
         # horizontally and vertically stacked versions of the adjacency graph
-        hor_ind, hor_size = adj(triples, n, r, vertical=False)
-        ver_ind, ver_size = adj(triples, n, r, vertical=True)
+        hor_ind, hor_size = adj(self.triples, n, 2*r+1, vertical=False)
+        ver_ind, ver_size = adj(self.triples, n, 2*r+1, vertical=True)
 
         _, rn = hor_size
-        r = rn//n
+        r = rn // n
 
         vals = torch.ones(ver_ind.size(0), dtype=torch.float)
         vals = vals / sum_sparse(ver_ind, vals, ver_size)
-        # -- the values are the same for the horizontal and the vertically stacked adjacency matrices
-        #    so we can just normalize them by the vertically stacked one and reuse for the horizontal
 
         hor_graph = torch.sparse.FloatTensor(indices=hor_ind.t(), values=vals, size=hor_size)
         self.register_buffer('hor_graph', hor_graph)
@@ -121,7 +136,6 @@ class RGCN(nn.Module):
 
             self.bases1 = nn.Parameter(torch.FloatTensor(bases, n, emb))
             nn.init.xavier_uniform_(self.bases1, gain=nn.init.calculate_gain('relu'))
-
 
         # layer 2 weights
         if bases is None:
@@ -192,19 +206,19 @@ class RGCN(nn.Module):
 
         return self.comps1.pow(p).sum() + self.bases1.pow(p).sum()
 
-def go(name='am1k', lr=0.0001, wd=0.01, epochs=50, prune=True, optimizer='adam'):
+def go(name='aifb', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam'):
 
-    data = load(name, torch=True, prune_dist=2 if prune else None)
+    data = load(name, torch=True, prune_dist=2 if prune else None, final=True)
 
     print(f'{data.triples.size(0)} triples')
     print(f'{data.num_entities} entities')
     print(f'{data.num_relations} relations')
 
     tic()
-    rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, numcls=data.num_classes)
+    rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, numcls=data.num_classes, bases=40)
 
     if torch.cuda.is_available():
-        print('Using cuda'.)
+        print('Using cuda.')
         rgcn.cuda()
 
         data.training = data.training.cuda()
@@ -230,13 +244,16 @@ def go(name='am1k', lr=0.0001, wd=0.01, epochs=50, prune=True, optimizer='adam')
         out_train = out[idxt, :]
         loss = F.cross_entropy(out_train, clst, reduction='mean')
 
+        # compute performance metrics
+        with torch.no_grad():
+            training_acc = (out[idxt, :].argmax(dim=1) == clst).sum().item() / idxt.size(0)
+            withheld_acc = (out[idxw, :].argmax(dim=1) == clsw).sum().item() / idxw.size(0)
+
         loss.backward()
         opt.step()
 
-        training_acc = (out[idxt, :].argmax(dim=1) == clst).sum().item() / idxt.size(0)
-        withheld_acc = (out[idxw, :].argmax(dim=1) == clsw).sum().item() / idxw.size(0)
-
-        print(f'epoch {e:02}: loss {loss:.4}, train acc {training_acc:.4}, withheld acc {withheld_acc:.4} ({toc():.5}s)')
+        print(out.mean().item(), out.std().item())
+        print(f'epoch {e:02}: loss {loss:.2}, train acc {training_acc:.2}, \t withheld acc {withheld_acc:.2} \t ({toc():.5}s)')
 
 if __name__ == '__main__':
     fire.Fire(go)

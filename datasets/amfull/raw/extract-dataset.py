@@ -145,6 +145,8 @@ for s, p, o in tqdm(triples, total=c):
 i2e = list(entities)
 i2r = list(relations)
 
+i2e.sort(); i2r.sort()
+
 df = pd.DataFrame(enumerate(i2e), columns=['index', 'label'])
 df.to_csv('entities.int.csv', index=False, header=True)
 
