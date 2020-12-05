@@ -140,7 +140,6 @@ test.to_csv('testing.csv', sep=',', index=False, header=True)
 test = df[bin == 3]
 test.to_csv('meta-testing.csv', sep=',', index=False, header=True)
 
-
 print('created train, val, test, meta split.')
 
 stripped = hdt.HDTDocument('am-stripped.hdt')

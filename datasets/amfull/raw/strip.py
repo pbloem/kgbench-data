@@ -67,7 +67,15 @@ whitelist = [
     'http://purl.org/collections/nl/am/birthPlace',
     'http://purl.org/collections/nl/am/deathPlace',
     'http://purl.org/collections/nl/am/nationality',
-    'http://purl.org/collections/nl/am/biography',
+    'http://purl.org/collections/nl/am/biography', # ~60% acc
+
+    'http://www.openarchives.org/ore/terms/proxyFor',
+    'http://purl.org/collections/nl/am/dimension',
+    'http://purl.org/collections/nl/am/dimensionType',
+    'http://purl.org/collections/nl/am/dimensionUnit',
+    'http://purl.org/collections/nl/am/dimensionValue',
+    'http://purl.org/collections/nl/am/termType',
+
 ]
 
 whitelist= set(whitelist)
