@@ -9,6 +9,8 @@ from torch import nn
 import torch.nn.functional as F
 from kgbench import load, tic, toc, d
 
+from collections import Counter
+
 def enrich(triples : torch.Tensor, n : int, r: int):
 
     cuda = triples.is_cuda
@@ -251,6 +253,21 @@ def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', f
 
         loss.backward()
         opt.step()
+
+        # Print relation norms
+        nr = data.num_relations
+        weights = rgcn.weights1 if bases is None else rgcn.comps1
+
+        ctr = Counter()
+
+        for r in range(nr):
+
+            ctr[data.i2r[r]] = weights[r].norm()
+            ctr['inv_'+ data.i2r[r]] = weights[r+nr].norm()
+
+        print('relations with largest weight norms in layer 1.')
+        for rel, w in ctr.most_common(5):
+            print(f'     norm {w:.4} for {rel} ')
 
         print(f'epoch {e:02}: loss {loss:.2}, train acc {training_acc:.2}, \t withheld acc {withheld_acc:.2} \t ({toc():.5}s)')
 
