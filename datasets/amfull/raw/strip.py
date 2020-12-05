@@ -74,8 +74,22 @@ whitelist = [
     'http://purl.org/collections/nl/am/dimensionType',
     'http://purl.org/collections/nl/am/dimensionUnit',
     'http://purl.org/collections/nl/am/dimensionValue',
-    'http://purl.org/collections/nl/am/termType',
+    'http://purl.org/collections/nl/am/termType', # ~75% acc
 
+    'http://purl.org/collections/nl/am/currentLocationType',
+    'http://purl.org/collections/nl/am/currentLocationDateEnd',
+    'http://purl.org/collections/nl/am/productionDateStart',
+    'http://purl.org/collections/nl/am/productionDateEnd',
+    'http://purl.org/collections/nl/am/currentLocationNotes',
+    'http://purl.org/collections/nl/am/exhibition',
+    'http://purl.org/collections/nl/am/exhibitionLref',
+    'http://purl.org/collections/nl/am/exhibitionTitle',
+    'http://purl.org/collections/nl/am/reproductionFormat',
+    'http://purl.org/collections/nl/am/exhibitionOrganiser',
+    'http://purl.org/collections/nl/am/wasPresentAt',
+    'http://purl.org/collections/nl/am/exhibitionVenue',
+    'http://purl.org/collections/nl/am/exhibitionDateStart',
+    'http://purl.org/collections/nl/am/exhibitionDateEnd',
 ]
 
 whitelist= set(whitelist)

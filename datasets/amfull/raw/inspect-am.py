@@ -6,7 +6,10 @@ from collections import Counter
 def getlabel(x, doc):
 
     triples, c = doc.search_triples(x, 'http://www.w3.org/2004/02/skos/core#prefLabel', '')
-    return next(triples)[2]
+    try:
+        return next(triples)[2]
+    except:
+        return '.none'
 
 # ---
 # triples, c = doc.search_triples('', '', '')
@@ -29,16 +32,22 @@ def getlabel(x, doc):
 # for type, ct in types.most_common():
 #     print(f'{ct: 5}: {type}')
 
+# doc = hdt.HDTDocument('am-combined.hdt')
+# triples, c = doc.search_triples('', 'http://www.w3.org/2004/02/skos/core#broader', '')
+#
+# types = Counter()
+# for s, p, o in triples:
+#     slabel = getlabel(s, doc)
+#     olabel = getlabel(o, doc)
+#
+#     types[slabel] += 1
+#     types[olabel] += 1
+#
+# for type, ct in types.most_common():
+#     print(f'{ct: 5}: {type}')
+
 doc = hdt.HDTDocument('am-combined.hdt')
-triples, c = doc.search_triples('', 'http://www.w3.org/2004/02/skos/core#broader', '')
+triples, c = doc.search_triples('', 'http://purl.org/collections/nl/am/contentMotifGeneral', '')
 
-types = Counter()
 for s, p, o in triples:
-    slabel = getlabel(s, doc)
-    olabel = getlabel(o, doc)
-
-    types[slabel] += 1
-    types[olabel] += 1
-
-for type, ct in types.most_common():
-    print(f'{ct: 5}: {type}')
+    print(getlabel(s, doc), getlabel(o, doc))

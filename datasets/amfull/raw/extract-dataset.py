@@ -106,7 +106,8 @@ df['cls'] = df.cls_label.cat.codes
 
 df.to_csv('all.csv', sep=',', index=False, header=True)
 print('Created dataframe. Class frequencies:')
-print(df.cls_label.value_counts())
+print(df.cls_label.value_counts(normalize=True))
+print(df.cls_label.value_counts(normalize=True))
 
 # * Split train, validation and test sets
 
