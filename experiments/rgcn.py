@@ -208,7 +208,7 @@ class RGCN(nn.Module):
 
         return self.comps1.pow(p).sum() + self.bases1.pow(p).sum()
 
-def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', final=False, emb=16, bases=None):
+def go(name='am1k', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='adam', final=False, emb=16, bases=None, printnorms=None):
 
     data = load(name, torch=True, prune_dist=2 if prune else None, final=final)
 
@@ -245,6 +245,8 @@ def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', f
 
         out_train = out[idxt, :]
         loss = F.cross_entropy(out_train, clst, reduction='mean')
+        if l2 != 0.0:
+            loss = loss + l2 * rgcn.penalty()
 
         # compute performance metrics
         with torch.no_grad():
@@ -254,20 +256,21 @@ def go(name='am1k', lr=0.01, wd=0.0, epochs=50, prune=False, optimizer='adam', f
         loss.backward()
         opt.step()
 
-        # Print relation norms
-        nr = data.num_relations
-        weights = rgcn.weights1 if bases is None else rgcn.comps1
+        if printnorms is not None:
+            # Print relation norms
+            nr = data.num_relations
+            weights = rgcn.weights1 if bases is None else rgcn.comps1
 
-        ctr = Counter()
+            ctr = Counter()
 
-        for r in range(nr):
+            for r in range(nr):
 
-            ctr[data.i2r[r]] = weights[r].norm()
-            ctr['inv_'+ data.i2r[r]] = weights[r+nr].norm()
+                ctr[data.i2r[r]] = weights[r].norm()
+                ctr['inv_'+ data.i2r[r]] = weights[r+nr].norm()
 
-        print('relations with largest weight norms in layer 1.')
-        for rel, w in ctr.most_common(5):
-            print(f'     norm {w:.4} for {rel} ')
+            print('relations with largest weight norms in layer 1.')
+            for rel, w in ctr.most_common(printnorms):
+                print(f'     norm {w:.4} for {rel} ')
 
         print(f'epoch {e:02}: loss {loss:.2}, train acc {training_acc:.2}, \t withheld acc {withheld_acc:.2} \t ({toc():.5}s)')
 
