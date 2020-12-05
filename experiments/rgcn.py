@@ -257,7 +257,7 @@ def go(name='am1k', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='
         opt.step()
 
         if printnorms is not None:
-            # Print relation norms
+            # Print relation norms layer 1
             nr = data.num_relations
             weights = rgcn.weights1 if bases is None else rgcn.comps1
 
@@ -272,7 +272,22 @@ def go(name='am1k', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='
             for rel, w in ctr.most_common(printnorms):
                 print(f'     norm {w:.4} for {rel} ')
 
+            weights = rgcn.weights2 if bases is None else rgcn.comps2
+
+            ctr = Counter()
+            for r in range(nr):
+
+                ctr[data.i2r[r]] = weights[r].norm()
+                ctr['inv_'+ data.i2r[r]] = weights[r+nr].norm()
+
+            print('relations with largest weight norms in layer 2.')
+            for rel, w in ctr.most_common(printnorms):
+                print(f'     norm {w:.4} for {rel} ')
+
+
         print(f'epoch {e:02}: loss {loss:.2}, train acc {training_acc:.2}, \t withheld acc {withheld_acc:.2} \t ({toc():.5}s)')
 
 if __name__ == '__main__':
+
+    print('arguments ', ' '.join(sys.argv))
     fire.Fire(go)
