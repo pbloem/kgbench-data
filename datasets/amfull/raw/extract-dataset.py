@@ -1,5 +1,5 @@
 import hdt
-import gzip
+import gzip, sys
 import pandas as pd
 import numpy as np
 
@@ -112,12 +112,20 @@ print('created dataframe.')
 # fixed seed for deterministic output
 np.random.seed(0)
 
-test_size = 10_000
-val_size = 10_000
-train_size =  len(df) - test_size - val_size
+meta_size = 20_000
+test_size = 20_000
+val_size = 20_000
+train_size =  len(df) - test_size - val_size - meta_size
 
-bin = np.concatenate( [np.full((train_size,), 0), np.full((val_size,), 1), np.full((val_size,), 2) ], axis=0)
-np.random.shuffle(bin)
+print(f'train {train_size}, val {val_size}, test {test_size}, meta {meta_size}')
+
+bin = np.concatenate( [
+    np.full((train_size,), 0),
+    np.full((val_size,), 1),
+    np.full((test_size,), 2),
+    np.full((meta_size,), 3) ], axis=0)
+
+np.random.shuffle(bin) # in place
 
 train = df[bin == 0]
 train.to_csv('training.csv', sep=',', index=False, header=True)
@@ -125,10 +133,14 @@ train.to_csv('training.csv', sep=',', index=False, header=True)
 val = df[bin == 1]
 val.to_csv('validation.csv', sep=',', index=False, header=True)
 
-test = df[bin == 1]
+test = df[bin == 2]
 test.to_csv('testing.csv', sep=',', index=False, header=True)
 
-print('created train, val, test split.')
+test = df[bin == 3]
+test.to_csv('meta-testing.csv', sep=',', index=False, header=True)
+
+
+print('created train, val, test, meta split.')
 
 stripped = hdt.HDTDocument('am-stripped.hdt')
 triples, c = stripped.search_triples('', '', '')
@@ -156,7 +168,7 @@ df.to_csv('relations.int.csv', index=False, header=True)
 e2i = {e:i for i, e in enumerate(i2e)}
 r2i = {r:i for i, r in enumerate(i2r)}
 
-for file in ['training', 'testing', 'validation']:
+for file in ['training', 'testing', 'validation', 'meta-testing']:
     df = pd.read_csv(file + '.csv')
     classes = df.cls
     instances = df.instance
