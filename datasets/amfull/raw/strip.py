@@ -19,41 +19,58 @@ def f(x : str):
         assert x.startswith('http') or x.startswith('file'), x
         return f'<{x}>'
 
-blacklist = [
-'http://purl.org/collections/nl/am/objectCategory',     # target relation
-'http://purl.org/collections/nl/am/material',           # target relation
+# blacklist = [
+#     'http://purl.org/collections/nl/am/objectCategory',     # target relation
+#     'http://purl.org/collections/nl/am/material',           # target relation
+#
+#     'http://purl.org/collections/nl/am/AHMTextsType',       # reveals target
+#
+#     'http://purl.org/collections/nl/am/partsTitle',         # frequent relations
+#     'http://www.w3.org/2000/01/rdf-schema#subPropertyOf',
+#     'http://rdfs.org/ns/void#dataDump',
+#     'http://purl.org/dc/terms/title',
+#     'http://www.swi-prolog.org/rdf/library/source',
+#     'http://rdfs.org/ns/void#subset',
+#     'http://www.w3.org/2000/01/rdf-schema#subClassOf',
+#     'http://purl.org/collections/nl/am/documentationNotes',
+#     'http://purl.org/collections/nl/am/lang',
+#
+#     'http://purl.org/collections/nl/am/alternativenumber',
+#     'http://purl.org/collections/nl/am/alternativeNumberType',
+#     'http://purl.org/collections/nl/am/alternativeNumber',
+#
+#     'http://purl.org/collections/nl/am/documentationTitle',
+#     'http://purl.org/collections/nl/am/documentation',
+#     'http://purl.org/collections/nl/am/documentationTitleLref',
+#     'http://purl.org/collections/nl/am/documentationPageReference',
+#     'http://purl.org/collections/nl/am/documentationSortyear',
+#     'http://purl.org/collections/nl/am/documentationAuthor',
+#
+#     'http://purl.org/collections/nl/am/priref',
+#
+#     'http://purl.org/collections/nl/am/acquisitionMethod',
+#     'http://purl.org/collections/nl/am/acquisitionDate',
+# ]
+#
+# blacklist = set(blacklist)
 
-'http://purl.org/collections/nl/am/AHMTextsType',       # reveals target
 
-'http://purl.org/collections/nl/am/partsTitle',         # frequent relations
-'http://www.w3.org/2000/01/rdf-schema#subPropertyOf',
-'http://rdfs.org/ns/void#dataDump',
-'http://purl.org/dc/terms/title',
-'http://www.swi-prolog.org/rdf/library/source',
-'http://rdfs.org/ns/void#subset',
-'http://www.w3.org/2000/01/rdf-schema#subClassOf',
-'http://purl.org/collections/nl/am/documentationNotes',
-'http://purl.org/collections/nl/am/lang',
-
-'http://purl.org/collections/nl/am/alternativenumber',
-'http://purl.org/collections/nl/am/alternativeNumberType',
-'http://purl.org/collections/nl/am/alternativeNumber',
-
-'http://purl.org/collections/nl/am/documentationTitle',
-'http://purl.org/collections/nl/am/documentation',
-'http://purl.org/collections/nl/am/documentationTitleLref',
-'http://purl.org/collections/nl/am/documentationPageReference',
-'http://purl.org/collections/nl/am/documentationSortyear',
-'http://purl.org/collections/nl/am/documentationAuthor',
-
-'http://purl.org/collections/nl/am/priref',
-
-'http://purl.org/collections/nl/am/acquisitionMethod',
-'http://purl.org/collections/nl/am/acquisitionDate',
-
+whitelist = [
+    'http://purl.org/collections/nl/am/title',
+    'http://www.openarchives.org/ore/terms/proxyIn',
+    'http://purl.org/collections/nl/am/maker',
+    'http://www.w3.org/1999/02/22-rdf-syntax-ns#value',
+    'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+    'http://www.w3.org/2004/02/skos/core#broader',
+    'http://purl.org/collections/nl/am/birthDateEnd',
+    'http://purl.org/collections/nl/am/deathDateEnd',
+    'http://purl.org/collections/nl/am/birthPlace',
+    'http://purl.org/collections/nl/am/deathPlace',
+    'http://purl.org/collections/nl/am/nationality',
+    'http://purl.org/collections/nl/am/biography',
 ]
 
-blacklist = set(blacklist)
+whitelist= set(whitelist)
 
 doc = hdt.HDTDocument('am-combined.hdt')
 triples, c = doc.search_triples('','','')
@@ -66,7 +83,7 @@ with gzip.open('am-stripped.nt.gz', 'wt') as file:
     unformatted = set()
 
     for s, p, o in tqdm(triples, total=c):
-        if p in blacklist:
+        if p not in whitelist:
             stripped += 1
         else:
             s, p, o = f(s), f(p), f(o)

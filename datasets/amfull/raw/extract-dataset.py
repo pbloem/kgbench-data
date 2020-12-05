@@ -15,48 +15,48 @@ Extracts target labels.
 ## Map from dataset category to coarse-grained classes.
 map = {}
 
-map['http://purl.org/collections/nl/am/t-14592'] = 'Books and documents'
+map['http://purl.org/collections/nl/am/t-14592'] = 'Books and Documents'
 # boekencollectie 	3479
 # Book collection
 
-map['http://purl.org/collections/nl/am/t-15459'] = 'Decorative arts'
+map['http://purl.org/collections/nl/am/t-15459'] = 'Decorative art'
 # meubelcollectie 	3206
 # Furniture
 
-map['http://purl.org/collections/nl/am/t-15573'] = 'Decorative arts'
+map['http://purl.org/collections/nl/am/t-15573'] = 'Decorative art'
 # glascollectie 	1028
 # Glass
 
-map['http://purl.org/collections/nl/am/t-15579'] = 'Decorative arts'
+map['http://purl.org/collections/nl/am/t-15579'] = 'Decorative art'
 # textielcollectie 	7366
 # Textiles
 
-map['http://purl.org/collections/nl/am/t-15606'] = 'Decorative arts'
+map['http://purl.org/collections/nl/am/t-15606'] = 'Decorative art'
 # keramiekcollectie 	5152
 
 map['http://purl.org/collections/nl/am/t-16469'] = 'Metallic art'
 # onedele metalen collectie 	797
 # Non-noble metals
 
-map['http://purl.org/collections/nl/am/t-22503'] = 'Visual art'
+map['http://purl.org/collections/nl/am/t-22503'] = 'Prints'
 # prentencollectie 	22048
 # Prints
 
-map['http://purl.org/collections/nl/am/t-22504'] = 'Visual art'
+map['http://purl.org/collections/nl/am/t-22504'] = 'Photographs'
 # fotocollectie 	1563
 # Photographs
 
-map['http://purl.org/collections/nl/am/t-22505'] = 'Visual art'
+map['http://purl.org/collections/nl/am/t-22505'] = 'Drawings'
 # tekeningencollectie 	5455
 # Drawings
 
-map['http://purl.org/collections/nl/am/t-22506'] = 'Visual art'
+map['http://purl.org/collections/nl/am/t-22506'] = 'Paintings'
 # schilderijencollectie 	2672
 # Paintings
 
-map['http://purl.org/collections/nl/am/t-22507'] = 'Visual art'
+map['http://purl.org/collections/nl/am/t-22507'] = 'Decorative art'
 # beeldencollectie 	943
-# General image collection
+# Sculpture (?)
 
 map['http://purl.org/collections/nl/am/t-22508'] = 'Metallic art'
 # edele metalencollectie 	3533
@@ -66,23 +66,23 @@ map['http://purl.org/collections/nl/am/t-22509'] = 'Historical artifacts'
 # penningen- en muntencollectie 	6440
 # Coins etc.
 
-map['http://purl.org/collections/nl/am/t-23765'] = 'Books and documents'
-# documentencollectie 	533
-# Document collection
-
 map['http://purl.org/collections/nl/am/t-28650'] = 'Historical artifacts'
 # archeologiecollectie 	582
 # Archeaological artifacts
 
+map['http://purl.org/collections/nl/am/t-23765'] = 'Books and Documents'
+# documentencollectie 	533
+# Document collection
+
 map['http://purl.org/collections/nl/am/t-31940'] = 'Metallic art'
 # -- Onedele collectie 	3
-# A small cetegory containing only room numbers from a defunct men's club
+# A small category containing only room numbers from a defunct men's club
 
 map['http://purl.org/collections/nl/am/t-32052'] = 'Historical artifacts'
 # -- maten en gewichtencollectie 	536
 # Measures and weight
 
-map['http://purl.org/collections/nl/am/t-5504'] = 'Decorative arts'
+map['http://purl.org/collections/nl/am/t-5504'] = 'Decorative art'
 # -- kunstnijverheidcollectie 	8087
 # Arts and crafts
 
@@ -105,7 +105,8 @@ df.cls_label = pd.Categorical(df.cls_label)
 df['cls'] = df.cls_label.cat.codes
 
 df.to_csv('all.csv', sep=',', index=False, header=True)
-print('created dataframe.')
+print('Created dataframe. Class frequencies:')
+print(df.cls_label.value_counts())
 
 # * Split train, validation and test sets
 
