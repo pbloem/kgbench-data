@@ -1,6 +1,6 @@
 # Dutch Monument Graph (DMG)
 
-This dataset is derived from the [DMG315k graph](https://gitlab.com/wxwilcke/dmg/dmg832k), and includes detailed information about 8,690 monuments in The
+This dataset is derived from the [DMG832k graph](https://gitlab.com/wxwilcke/dmg), and includes detailed information about 8,690 monuments in The
 Netherlands on top of images and geometries.
 
 `dmg_context.nt.gz`
