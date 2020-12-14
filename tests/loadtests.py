@@ -7,7 +7,7 @@ import sys
 import kgbench as kg
 from kgbench import tic, toc
 
-class TestUtil(unittest.TestCase):
+class TestLoad(unittest.TestCase):
 
     stats = {
         'amfull' : {
@@ -54,8 +54,23 @@ class TestUtil(unittest.TestCase):
 
             print(f'checked {name} ({toc():.4}s).')
 
+    def test_mm(self):
+        """
+        Testing the loading functions of multimodal data
+        :return:
+        """
 
+        amplus = kg.load('amplus')
 
+        ims = amplus.get_pil_images()
+
+        ims[5467].save('test1.png')
+        ims[5468].save('test2.png')
+        ims[9999].save('test3.png')
+
+        # ims = amplus.get_image_tensor()
+        # print(ims.shape)
+        # print(ims.min(), ims.max(), ims.mean())
 
 
 
