@@ -1,6 +1,6 @@
 # KGBench datatype
 
-KGBench datasets contain bty-to-string encoded literals. These string literals encode byte-level data, potentially containing images, video or audio (although only images are currently used in the datasets).
+KGBench datasets contain byte-to-string encoded literals. These string literals encode byte-level data, potentially containing images, video or audio (although only images are currently used in the datasets).
 
 We define the following datatypes:
  
