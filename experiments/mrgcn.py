@@ -8,7 +8,7 @@ blank nodes are given fixed embeddings.
 
 """
 
-import fire, sys
+import fire, sys, tqdm
 
 import torch
 from torch import nn
@@ -18,7 +18,10 @@ import kgbench as kg
 
 from collections import Counter
 
-import transformers
+import transformers as tf
+from torchvision import transforms
+
+from sklearn.decomposition import PCA
 
 def enrich(triples : torch.Tensor, n : int, r: int):
 
@@ -106,14 +109,16 @@ def adj(triples, num_nodes, num_rels, cuda=False, vertical=True):
 
 class RGCN(nn.Module):
     """
-    Classic RGCN
+    We use a classic RGCN, with embeddings as inputs (instead of the one-hot inputs of rgcn.py)
+
     """
 
-    def __init__(self, triples, n, r, numcls, emb=16, bases=None):
+    def __init__(self, triples, n, r, insize, hidden, numcls, bases=None):
 
         super().__init__()
 
-        self.emb = emb
+        self.insize = insize
+        self.hidden = hidden
         self.bases = bases
         self.numcls = numcls
 
@@ -137,7 +142,7 @@ class RGCN(nn.Module):
 
         # layer 1 weights
         if bases is None:
-            self.weights1 = nn.Parameter(torch.FloatTensor(r, n, emb))
+            self.weights1 = nn.Parameter(torch.FloatTensor(r, insize, hidden))
             nn.init.xavier_uniform_(self.weights1, gain=nn.init.calculate_gain('relu'))
 
             self.bases1 = None
@@ -145,13 +150,13 @@ class RGCN(nn.Module):
             self.comps1 = nn.Parameter(torch.FloatTensor(r, bases))
             nn.init.xavier_uniform_(self.comps1, gain=nn.init.calculate_gain('relu'))
 
-            self.bases1 = nn.Parameter(torch.FloatTensor(bases, n, emb))
+            self.bases1 = nn.Parameter(torch.FloatTensor(bases, insize, hidden))
             nn.init.xavier_uniform_(self.bases1, gain=nn.init.calculate_gain('relu'))
 
         # layer 2 weights
         if bases is None:
 
-            self.weights2 = nn.Parameter(torch.FloatTensor(r, emb, numcls) )
+            self.weights2 = nn.Parameter(torch.FloatTensor(r, hidden, numcls) )
             nn.init.xavier_uniform_(self.weights2, gain=nn.init.calculate_gain('relu'))
 
             self.bases2 = None
@@ -159,30 +164,37 @@ class RGCN(nn.Module):
             self.comps2 = nn.Parameter(torch.FloatTensor(r, bases))
             nn.init.xavier_uniform_(self.comps2, gain=nn.init.calculate_gain('relu'))
 
-            self.bases2 = nn.Parameter(torch.FloatTensor(bases, emb, numcls))
+            self.bases2 = nn.Parameter(torch.FloatTensor(bases, hidden, numcls))
             nn.init.xavier_uniform_(self.bases2, gain=nn.init.calculate_gain('relu'))
 
-        self.bias1 = nn.Parameter(torch.FloatTensor(emb).zero_())
+        self.bias1 = nn.Parameter(torch.FloatTensor(hidden).zero_())
         self.bias2 = nn.Parameter(torch.FloatTensor(numcls).zero_())
 
-    def forward(self):
+    def forward(self, features):
 
-        ## Layer 1
-
+        # size of node representation per layer: f -> e -> c
         n, rn = self.hor_graph.size()
         r = rn // n
-        e = self.emb
+        e = self.hidden
         b, c = self.bases, self.numcls
+
+        n, f = features.size()
+
+        ## Layer 1
+        h = torch.mm(self.ver_graph, features) # sparse mm
+        h = h.view(r, n, f) # new dim for the relations
+
         if self.bases1 is not None:
-            # weights = torch.einsum('rb, bij -> rij', self.comps1, self.bases1)
-            weights = torch.mm(self.comps1, self.bases1.view(b, n*e)).view(r, n, e)
+            weights = torch.einsum('rb, bij -> rij', self.comps1, self.bases1)
+            # weights = torch.mm(self.comps1, self.bases1.view(b, n*e)).view(r, n, e)
         else:
             weights = self.weights1
 
-        assert weights.size() == (r, n, e)
+        assert weights.size() == (r, f, e)
 
         # Apply weights and sum over relations
-        h = torch.mm(self.hor_graph, weights.view(r*n, e))
+        h = torch.bmm(h, weights).sum(dim=0)
+
         assert h.size() == (n, e)
 
         h = F.relu(h + self.bias1)
@@ -194,8 +206,8 @@ class RGCN(nn.Module):
         h = h.view(r, n, e) # new dim for the relations
 
         if self.bases2 is not None:
-            # weights = torch.einsum('rb, bij -> rij', self.comps2, self.bases2)
-            weights = torch.mm(self.comps2, self.bases2.view(b, e * c)).view(r, e, c)
+            weights = torch.einsum('rb, bij -> rij', self.comps2, self.bases2)
+            # weights = torch.mm(self.comps2, self.bases2.view(b, e * c)).view(r, e, c)
         else:
             weights = self.weights2
 
@@ -216,42 +228,169 @@ class RGCN(nn.Module):
 
         return self.comps1.pow(p).sum() + self.bases1.pow(p).sum()
 
-def go(name='amplus', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='adam', final=False, emb=16, bases=None, printnorms=None):
+def mobilenet_emb(pilimages, bs=512):
+
+    # Create embeddings for image
+    prep = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    #-- Standard mobilenet preprocessing.
+
+    image_embeddings = []
+
+    model = torch.hub.load('pytorch/vision:v0.6.0', 'mobilenet_v2', pretrained=True)
+
+    if torch.cuda.is_available():
+        model.cuda()
+
+    nimages = len(pilimages)
+    imagegen = kg.to_tvbatches(pilimages, batch_size=bs, prep=prep, min_size=224, dtype=torch.float32)
+
+    for batch in tqdm.tqdm(imagegen, total=nimages // bs):
+        if torch.cuda.is_available():
+            batch = batch.cuda()
+
+        out = model.features(batch)
+        image_embeddings.append(out.view(bs, -1))
+
+    return torch.cat(image_embeddings, dim=0)
+
+def bert_emb(strings, bs_chars, mname='distilbert-base-cased'):
+    # Sort by length and reverse the sort after computing embeddings
+    # (this will speed up computation of the embeddings, by reducing the amount of padding required)
+
+    indexed = list(enumerate(strings))
+    indexed.sort(key=lambda p:len(p[1]))
+
+    embeddings = bert_emb_([s for _, s in indexed], bs_chars)
+    indices = torch.tensor([i for i, _ in indexed])
+    _, iindices = indices.sort()
+
+    return embeddings[iindices]
+
+MNAME='distilbert-base-cased'
+
+bmodel = tf.DistilBertModel.from_pretrained(MNAME)
+btok = tf.DistilBertTokenizerFast.from_pretrained(MNAME)
+
+def bert_emb_(strings, bs_chars, ):
+
+    pbar = tqdm.tqdm(total=len(strings))
+
+    outs = []
+    fr = 0
+    while fr < len(strings):
+
+        to = fr
+        bs = 0
+        while bs < bs_chars and to < len(strings):
+            bs += len(strings[to])
+            to += 1
+            # -- add strings to the batch until it puts us over bs_chars
+
+        # print('batch', fr, to, len(strings))
+        strbatch = strings[fr:to]
+
+        try:
+            batch = btok(strbatch, padding=True, truncation=True, return_tensors="pt")
+        except:
+            print(strbatch)
+            sys.exit()
+        #-- tokenizer automatically prepends the CLS token
+        inputs, mask = batch['input_ids'], batch['attention_mask']
+        if torch.cuda.is_available():
+            inputs, mask = inputs.cuda(), mask.cuda()
+
+        out = bmodel(inputs, mask)
+
+        outs.append(out[0][:, 0, :]) # use only the CLS token
+
+        pbar.update(len(strbatch))
+        fr = to
+
+    return torch.cat(outs, dim=0)
+
+def pca(tensor, target_dim):
+    """
+    Applies PCA to a torch matrix to reduce it to the target dimension
+    """
+
+    if tensor.is_cuda:
+        tensor = tensor.to('cpu')
+    model = PCA(n_components=target_dim, whiten=True)
+
+    res = model.fit_transform(tensor)
+    res =  torch.from_numpy(res)
+
+    if torch.cuda.is_available():
+        res = res.cuda()
+
+    return res
+
+def go(name='aifb', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='adam', final=False, emb=16, bases=None, printnorms=None):
+
+    # bert_emb(['.....', '.', '..', '...', '....'], bs_chars = 50_000)
 
     data = load(name, torch=True, prune_dist=2 if prune else None, final=final)
+    data = kg.group(data)
 
     print(f'{data.triples.size(0)} triples')
     print(f'{data.num_entities} entities')
     print(f'{data.num_relations} relations')
 
-    # Create embeddings for images
-
-    pilimages = data.get_pil_images()
-    images = kg.to_tensorbatches(pilimages, batch_size=4, use_torch=True)
-
-    with torch.no_grad():
-
-        image_embeddings = []
-
-        model = torch.hub.load('pytorch/vision:v0.6.0', 'mobilenet_v2', pretrained=True)
-        print(model.dtype)
-        sys.exit()
-        model.eval()
-
-        for batch in images:
-            print(batch.size(), batch.dtype)
-            image_embeddings.append(model(batch))
-
-        image_embeddings = torch.cat(image_embeddings, dim=0)
-        print(image_embeddings.size())
-        sys.exit()
+    if torch.cuda.is_available():
+        bmodel.cuda()
 
     tic()
-    rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, numcls=data.num_classes, emb=emb, bases=bases)
+    with torch.no_grad():
+
+        embeddings = []
+        for datatype in data.datatypes():
+            if datatype in ['uri', 'blank_node']:
+                print(f'Initializing embedding for datatype {datatype}.')
+                # create random embeddings
+                # -- we will parametrize this part of the input later
+                n = len(data.get_strings(dtype=datatype))
+                embeddings.append(torch.randn(n, emb))
+
+            elif datatype == 'http://kgbench.info/dt#base64Image':
+                print(f'Computing embeddings for images.')
+                image_embeddings = mobilenet_emb(data.get_images())
+                image_embeddings = pca(image_embeddings, target_dim=emb)
+                embeddings.append(image_embeddings)
+
+            else:
+                # embed literal strings with DistilBERT
+                print(f'Computing embeddings for datatype {datatype}.')
+                string_embeddings = bert_emb(data.get_strings(dtype=datatype), bs_chars=50_000)
+                string_embeddings = pca(string_embeddings, target_dim=emb)
+                embeddings.append(string_embeddings)
+
+        embeddings = torch.cat(embeddings, dim=0).to(torch.float)
+        # -- note that we use the fact here that the data loader clusters the nodes by data type, in the
+        #    order given by data._datasets
+    print(f'embeddings created in {toc()} seconds.')
+
+    # Split embeddings into trainable and non-trainable
+    num_uri, num_bnode = len(data.datatype_l2g('uri')), len(data.datatype_l2g('blank_node'))
+    numparms = num_uri + num_bnode
+    trainable = embeddings[:numparms, :]
+    constant  = embeddings[numparms:, :]
+
+    trainable = nn.Parameter(trainable)
+
+    tic()
+    rgcn = RGCN(data.triples, n=data.num_entities, r=data.num_relations, insize=emb, hidden=emb, numcls=data.num_classes, bases=bases)
 
     if torch.cuda.is_available():
         print('Using cuda.')
         rgcn.cuda()
+
+        trainable = trainable.cuda()
+        constant = constant.cuda()
 
         data.training = data.training.cuda()
         data.withheld = data.withheld.cuda()
@@ -268,7 +407,9 @@ def go(name='amplus', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer
     for e in range(epochs):
         tic()
         opt.zero_grad()
-        out = rgcn()
+
+        features = torch.cat([trainable, constant], dim=0)
+        out = rgcn(features)
 
         idxt, clst = data.training[:, 0], data.training[:, 1]
         idxw, clsw = data.withheld[:, 0], data.withheld[:, 1]
