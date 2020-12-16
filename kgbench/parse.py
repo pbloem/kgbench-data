@@ -66,7 +66,10 @@ def parse_literal(statement):
 
     qstart = 0
     qend = eat_quoted(qstart, statement)
+
     quoted = statement[qstart+1 : qend]
+    quoted = decode(quoted)
+    # -- decode any special characters
 
     i = eat_whitespace(qend+1, statement)
 
@@ -85,6 +88,8 @@ def parse_literal(statement):
         datatype = remainder[1:-1]
 
         return Literal(quoted, datatype=datatype)
+
+    raise Exception(f'Could not parse literal: {statement}')
 
 def eat_quoted(i, string):
     """
@@ -131,7 +136,7 @@ def parse_iriref(statement):
     if iriref.startswith('<'):
         iriref = IRIRef(iriref[1:-1])
     else:
-        raise Exception("Unsuspected format: " + iriref)
+        raise Exception("Unexpected format: " + iriref)
 
     return (iriref, remainder)
 
@@ -183,6 +188,13 @@ class Literal(Resource):
     """
 
     def __init__(self, value, datatype=None, language=None):
+        """
+        NB: Literal.value does not have it's double quote characters escaped. The n3() method escapes the quotes.
+
+        :param value: Body of the string.
+        :param datatype:
+        :param language:
+        """
         super().__init__(value)
 
         if datatype is not None and language is not None:
@@ -207,14 +219,15 @@ class Literal(Resource):
 
     def n3(self):
         # literal
-        res = '"' + self.value + '"'
+        body = encode(self.value)
+
+        res = '"' + body + '"'
         if self.language is not None:
             res += '@' + self.language
         elif self.datatype is not None:
             res += '^^' + self.datatype.n3()
 
         return res
-
 
 class BNode(Entity):
     def __init__(self, value):
@@ -229,3 +242,13 @@ class IRIRef(Entity):
 
     def n3(self):
         return '<' + self.value + '>'
+
+def encode(s : str):
+    s = s.replace('\\', '\\\\')
+    s = s.replace('"', '\\"')
+    return s
+
+def decode(s : str):
+    s = s.replace('\\"', '"')
+    s = s.replace('\\\\', '\\')
+    return s

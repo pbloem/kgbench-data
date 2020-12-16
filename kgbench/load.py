@@ -3,26 +3,11 @@ import numpy as np
 import os
 from os.path import join as j
 import pandas as pd
-import gzip, base64, io, sys
+import gzip, base64, io, sys, warnings
 
 from skimage import io as skio
 
 import torch
-
-I2D = [
-    'none',
-    'blank_node',
-    'uri',
-    'http://www.w3.org/2001/XMLSchema#b64string',
-    'http://www.w3.org/2001/XMLSchema#date',
-    'http://www.w3.org/2001/XMLSchema#decimal',
-    'http://www.w3.org/2001/XMLSchema#positiveInteger'
-]
-
-""" List of string identifies for all datatypes used in the various datasets."""
-
-D2I = {d: i for i, d in enumerate(I2D)}
-""" Dictionary mapping datatypes to integer indices."""
 
 class Data:
     """
@@ -75,7 +60,7 @@ class Data:
             print(f'loaded triples ({toc():.4}s).')
 
             self.i2r, self.r2i = load_indices(j(dir, 'relations.int.csv'))
-            self.i2e, self.e2i = load_entities(j(dir, 'entities.int.csv'))
+            self.i2e, self.e2i = load_entities(j(dir, 'nodes.int.csv'))
 
             self.num_entities  = len(self.i2e)
             self.num_relations = len(self.i2r)
@@ -128,8 +113,10 @@ class Data:
             except:
                 num_noparse += 1
                 res.append(Image.new('RGB', (1, 1)))
-                # -- if the image can't be parsed, we insert a 1x1 black image
-                # TODO 214 items in AMplus are error messages
+                # -- If the image can't be parsed, we insert a 1x1 black image
+
+        if num_noparse > 0:
+            warnings.warn(f'There were {num_noparse} images that couldn\'t be parsed. These have been replaced by black images.')
 
         # print(num_noparse, 'unparseable', len([r for r in res if r is not None]), 'parseable')
 
@@ -189,10 +176,10 @@ class Data:
 
         return self._datatypes[i]
 
-SPECIAL = {'uri':'0', 'blank_node':'1', 'none':'2'}
+SPECIAL = {'iri':'0', 'blank_node':'1', 'none':'2'}
 def datatype_key(string):
     """
-    A key that defines the canonical ordering for datatypes. The datatypes 'uri', 'blank_node' and 'none' are sorted to the front
+    A key that defines the canonical ordering for datatypes. The datatypes 'iri', 'blank_node' and 'none' are sorted to the front
     in that order, with any further datatypes following in lexicographic order.
 
     :param string:
@@ -207,6 +194,7 @@ def datatype_key(string):
 def load(name, final=False, torch=False, prune_dist=None):
     """
     Returns the requested dataset.
+
     :param name: One of amfull, am1k, wd-people
     :param final: Loads the test/train split instead of the validation train split. In this case the training data
     consists of both training and validation.
@@ -310,7 +298,7 @@ def load_entities(file):
     assert not df.isnull().any().any(), f'CSV file {file} has missing values'
 
     idxs = df['index']      .tolist()
-    dtypes = df['datatype'] .tolist()
+    dtypes = df['annotation'] .tolist()
     labels = df['label']    .tolist()
 
     ents = zip(labels, dtypes)

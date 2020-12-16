@@ -10,6 +10,8 @@ import numpy as np
 
 import torchvision as tv
 
+from .parse import parse_term, Literal, IRIRef, BNode
+
 tics = []
 
 
@@ -147,5 +149,126 @@ def pad(im, desired_size):
 
     return ImageOps.expand(im, padding)
 
+def entity(ent : str):
+    """
+    Returns the value of an entity separated from its datatype.
+
+    The datatype here is either the RDF datatype or the RDF language tag. Since the datasets
+
+    :param ent:
+    :return: A pair of string
+    """
+
+    term = parse_term(ent)
+
+    if type(term) == BNode:
+        return ent, 'blank_node'
+
+    if type(term) == Literal:
+
+        dt = 'none'
+        if term.datatype is not None:
+            dt = term.datatype.value
+        if term.language is not None:
+            dt = '@' + term.language
+
+        return term.value, dt
+
+    if type(term) == IRIRef:
+
+        return ent, 'iri'
+
+    else:
+        raise Exception(str, term)
+
+def entity_hdt(ent : str):
+    """
+    Returns the value of an entity separated from its datatype.
+
+    The datatype here is either the RDF datatype or the RDF language tag.
+
+    :param ent:
+    :return: A pair of strings
+    """
+
+    if ent.startswith('_'):
+        return ent, 'blank_node'
+
+    if ent.startswith('"'):
+
+        term = parse_hdt_literal(ent)
+
+        dt = 'none'
+        if term.datatype is not None:
+            dt = term.datatype.value
+        if term.language is not None:
+            dt = '@' + term.language
+
+        return term.value, dt
+
+    return ent, 'iri'
+
+def n3(hdt_term : str, escape=True):
+    """
+    Returns the the nt formatting for a given term representation as produced by the HDT library
+
+    :param x:
+    :param escape: Escape newlines to tokens ".newline" and ".cr" so that any resulting string becomes single line  (this
+        makes any resulting .nt file easier to parse.
+    :return:
+    """
+
+
+    if hdt_term.startswith('_'):
+        return hdt_term
+
+    if hdt_term.startswith('"'): # literal, escape newlines
+        term = parse_hdt_literal(hdt_term)
+
+        if escape:
+            term.value = term.value.replace('\n', ' .newline ').replace('\r', ' .cr ')
+
+        return term.n3()
+
+    return f'<{hdt_term}>'
+
+def parse_hdt_literal(lit : str):
+    """
+    The HDT Literal format is almost, but not quite the same as n-triples. Specifically any quotes inside the body of
+    the string are not escaped.
+
+    This parser reads an HDT literal into a kg.Literal object. The Literal.n3 function will escape the quotes when printing
+    :return:
+    """
+
+    assert(lit[0] == '"')
+    qend = rmq(lit)
+
+    body, rem = lit[1:qend], lit[qend+1:]
+
+    if rem.startswith('@'):
+        lang = rem[1:]
+
+        return Literal(body, language=lang)
+
+    if rem.startswith('^^'):
+        dt = rem[3:-1]
+
+        return Literal(body, datatype=dt)
+
+    return Literal(body)
+
+def rmq(str):
+    """
+    Returns the index of the rightmost "
+
+    :param str:
+    :return:
+    """
+    i = len(str) - 1
+    for i in range(len(str) - 1, -1, -1):
+        if str[i] == '"':
+            return i
+    return None
 
 
