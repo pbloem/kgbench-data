@@ -62,15 +62,23 @@ class TestLoad(unittest.TestCase):
 
         amplus = kg.load('amplus')
 
-        ims = amplus.get_pil_images()
+        ims = amplus.get_images()
 
-        ims[5467].save('test1.png')
-        ims[5468].save('test2.png')
+        ims[6467].save('test1.png')
+        ims[7468].save('test2.png')
         ims[9999].save('test3.png')
 
         # ims = amplus.get_image_tensor()
         # print(ims.shape)
         # print(ims.min(), ims.max(), ims.mean())
+
+    def test_dtk(self):
+
+        strings = ['uri', 'aaaa', 'bbbb', 'bb', 'z', 'none', 'blank_node']
+        strings.sort(key=kg.datatype_key)
+
+        for s in strings:
+            print(s)
 
 
 

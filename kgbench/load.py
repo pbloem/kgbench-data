@@ -25,6 +25,10 @@ D2I = {d: i for i, d in enumerate(I2D)}
 """ Dictionary mapping datatypes to integer indices."""
 
 class Data:
+    """
+    Class representing a dataset.
+
+    """
 
     triples = None
     """ The edges of the knowledge graph (the triples), represented by their integer indices. A (m, 3) numpy 
@@ -105,9 +109,9 @@ class Data:
                 self.withheld = torch.from_numpy(self.withheld)
 
 
-    def get_pil_images(self, dtype='http://www.w3.org/2001/XMLSchema#b64string'):
+    def get_images(self, dtype='http://kgbench.info/dt#base64Image'):
         """
-        Retrieves the entities with the given datatype as images. This assumes that the labels are b64 encoded images.
+        Retrieves the entities with the given datatype as PIL image objects.
 
         :param dtype:
         :return: A list of PIL image objects
@@ -118,7 +122,7 @@ class Data:
         # Take in base64 string and return cv image
         num_noparse = 0
         for b64 in self.get_strings(dtype):
-            imgdata = base64.b64decode(b64, '-_')
+            imgdata = base64.urlsafe_b64decode(b64)
             try:
                 res.append(Image.open(io.BytesIO(imgdata)))
             except:
@@ -131,79 +135,74 @@ class Data:
 
         return res
 
-    # def get_image_tensor(self, dtype='http://www.w3.org/2001/XMLSchema#b64string'):
-    #     """
-    #     Retrieves the entities with the given datatype as images. This assumes that the labels are b64 encoded images.
-    #
-    #     :param dtype:
-    #     :return: A 4-tensor of shape (n, c, h, w) containing all entities of the given datatype.
-    #     """
-    #
-    #     res = []
-    #     # Take in base64 string and return cv image
-    #     for b64 in self.get_strings(dtype):
-    #         imgdata = base64.b64decode(b64, '-_')
-    #         try:
-    #             h, w, c = skio.imread(io.BytesIO(imgdata)).shape
-    #             break
-    #         except:
-    #             continue
-    #
-    #     for b64 in self.get_strings(dtype):
-    #         imgdata = base64.b64decode(b64, '-_')
-    #         try:
-    #             image = skio.imread(io.BytesIO(imgdata)).transpose(0, 2)[None, :, :, :]
-    #             assert image.shape == (1, c, h, w), f'All images expected to have same dimensions {(c, h, w)}'
-    #             res.append(image)
-    #         except:
-    #             res.append(np.zeros((1, c, h, w)))
-    #             # TODO add zeros for unparseable images for now.
-    #
-    #     res = np.concatenate(res, axis=0)
-    #
-    #     return torch.from_numpy(res) if self.torch else res
-
-    _dt_i2e = {}
-    _dt_e2i = {}
-    def get_strings(self, dtype, copy=True):
+    _dt_l2g = {}
+    _dt_g2l = {}
+    def datatype_g2l(self, dtype, copy=True):
         """
-        Retrieves all entities of the given datatype.
+        Returns a list mapping a global index of an entity (the indexing over all nodes) to its _local index_ the indexing
+        over all nodes of the given datatype
 
-        :param copy: If False, returns the list which back this data object. Faster, but list should not be modified.
-        :return:
-        """
-        if dtype not in self._dt_i2e:
-            self._dt_i2e[dtype] = [label for i, (label, dt) in self.i2e if dt == dtype]
-            self._dt_e2i[dtype] = {label: i for i, label in enumerate(self._dt_i2e[dtype])}
-
-        return list(self._dt_i2e[dtype]) if copy else self._dt_i2e[dtype]
-
-    def get_dtidx(self, dtype, copy=True):
-        """
-        Returns a dictionary mapping an entity label to its index among other entities of the same datatype.
-
-        That is, and entity "0.3"^^<http://www.w3.org/2001/XMLSchema#decimall> May be 10345 among all entities, but 678
-        among only the entities with this particular datatype.
-
-        :param entity_idx:
         :param dtype:
+        :param copy:
+        :return: A dict d so that `d[global_index] = local_index`
+        """
+        if dtype not in self._dt_l2g:
+            self._dt_l2g[dtype] = [i for i, (label, dt) in enumerate(self.i2e) if dt == dtype]
+            self._dt_g2l[dtype] = {g: l for l, g in enumerate(self._dt_l2g[dtype])}
+
+        return dict(self._dt_g2l[dtype]) if copy else self._dt_g2l[dtype]
+
+    def datatype_l2g(self, dtype, copy=True):
+        """
+        Maps local to global indices.
+
+        :param dtype:
+        :param copy:
+        :return: A list l so that `l[local index] = global_index`
+        """
+        self.datatype_g2l(dtype, copy=False) # init dicts
+
+        return list(self._dt_l2g[dtype]) if copy else self._dt_l2g[dtype]
+
+    def get_strings(self, dtype):
+        """
+        Retrieves a list of all string representations of a given datatype in order
+
         :return:
         """
-        if dtype not in self._dt_maps:
-            self.get_strings(dtype)
+        return [self.i2e[g][0] for g in self.datatype_l2g(dtype)]
 
-        return dict(self._dt_e2i[dtype]) if copy else self._dt_e2i[dtype]
-
-    def dt_index(self, enidx):
+    _datatypes = None
+    def datatypes(self, i = None):
         """
-        Converts a global index of an entity to its index among entities with the same datatype.
-
-        :param enidx:
-        :return:
+        :return: If i is None:a list containing all datatypes present in this dataset (including literals without datatype, URIs and
+            blank nodes), in canonical order (dee `datatype_key()`).
+            If `i` is a nonnegative integer, the i-th element in this list.
         """
-        dt, lbl = self.i2e[enidx]
+        if self._datatypes is None:
+            self._datatypes = {dt for _, dt in self.i2e}
+            self._datatypes = list(self._datatypes)
+            self._datatypes.sort(key=datatype_key)
 
-        return self.get_dtidx(dt, copy=False)[lbl]
+        if i is None:
+            return self._datatypes
+
+        return self._datatypes[i]
+
+SPECIAL = {'uri':'0', 'blank_node':'1', 'none':'2'}
+def datatype_key(string):
+    """
+    A key that defines the canonical ordering for datatypes. The datatypes 'uri', 'blank_node' and 'none' are sorted to the front
+    in that order, with any further datatypes following in lexicographic order.
+
+    :param string:
+    :return:
+    """
+
+    if string in SPECIAL:
+        return SPECIAL[string] + string
+
+    return '9' + string
 
 def load(name, final=False, torch=False, prune_dist=None):
     """
@@ -247,11 +246,11 @@ def micro(final=True, use_torch=False):
     data.num_relations = 2
     data.num_classes = 2
 
-    data.i2e = [str(i) for i in range(data.num_entities)]
+    data.i2e = [(str(i), 'none') for i in range(data.num_entities)]
     data.i2r = [str(i) for i in range(data.num_entities)]
 
-    data.e2i = {i:e for e, i in enumerate(data.i2e)}
-    data.r2i = {i:r for r, i in enumerate(data.i2e)}
+    data.e2i = {e:i for i, e in enumerate(data.i2e)}
+    data.r2i = {r:i for i, r in enumerate(data.i2e)}
 
     data.final = final
     data.triples = np.asarray(
@@ -279,23 +278,36 @@ def micro(final=True, use_torch=False):
 
 def load_indices(file):
 
-    df = pd.read_csv(file)
+    df = pd.read_csv(file, na_values=[], keep_default_na=False)
+
+    assert len(df.columns) == 2, 'CSV file should have two columns (index and label)'
+    assert not df.isnull().any().any(), f'CSV file {file} has missing values'
 
     idxs = df['index'].tolist()
     labels = df['label'].tolist()
 
     i2l = list(zip(idxs, labels))
     i2l.sort(key=lambda p: p[0])
+    for i, (j, _) in enumerate(i2l):
+        assert i == j, f'Indices in {file} are not contiguous'
 
-    l2i = {l:i for i, l in i2l}
+    i2l = [l for i, l in i2l]
+
+    l2i = {l:i for i, l in enumerate(i2l)}
 
     return i2l, l2i
 
 def load_entities(file):
 
-    df = pd.read_csv(file)
+    df = pd.read_csv(file, na_values=[], keep_default_na=False)
+
+    if df.isnull().any().any():
+        lines = df.isnull().any(axis=1)
+        print(df[lines])
+        raise Exception('CSV has missing values.')
 
     assert len(df.columns) == 3, 'Entity file should have three columns (index, datatype and label)'
+    assert not df.isnull().any().any(), f'CSV file {file} has missing values'
 
     idxs = df['index']      .tolist()
     dtypes = df['datatype'] .tolist()
@@ -305,8 +317,12 @@ def load_entities(file):
 
     i2e = list(zip(idxs, ents))
     i2e.sort(key=lambda p: p[0])
+    for i, (j, _) in enumerate(i2e):
+        assert i == j, 'Indices in entities.int.csv are not contiguous'
 
-    e2i = {e: i for i, e in i2e}
+    i2e = [l for i, l in i2e]
+
+    e2i = {e: i for e in enumerate(i2e)}
 
     return i2e, e2i
 
@@ -360,8 +376,9 @@ def prune(data : Data, n=2):
     nw.i2e = [data.i2e[n2o[i]] for i in range(len(n2o))]
     nw.e2i = {e: i for i, e in enumerate(nw.i2e)}
 
-    nw.i2r = data.i2r
-    nw.r2i = data.r2i
+    # relations are unchanged, but copied for the sake of GC
+    nw.i2r = list(data.i2r)
+    nw.r2i = dict(data.r2i)
 
     # count the new number of triples
     num = 0
@@ -377,6 +394,74 @@ def prune(data : Data, n=2):
             s, o =  o2n[s], o2n[o]
             nw.triples[row, :] = (s, p, o)
             row += 1
+
+    nw.training = data_training.copy()
+    for i in range(nw.training.shape[0]):
+        nw.training[i, 0] = o2n[nw.training[i, 0]]
+
+    nw.withheld = data_withheld.copy()
+    for i in range(nw.withheld.shape[0]):
+        nw.withheld[i, 0] = o2n[nw.withheld[i, 0]]
+
+    nw.num_classes = data.num_classes
+
+    nw.final = data.final
+    nw.torch = data.torch
+    if nw.torch:  # this should be constant-time/memory
+        nw.triples = torch.from_numpy(nw.triples)
+        nw.training = torch.from_numpy(nw.training)
+        nw.withheld = torch.from_numpy(nw.withheld)
+
+    return nw
+
+def group(data : Data):
+    """
+    Groups the dataset by datatype. That is, reorders the nodes so that all nodes of data.datatypes(0) come first,
+    followed by the nodes of datatype(1), and so on.
+
+    The datatypes 'uri', 'blank_node' and 'none' are guaranteed to be sorted to the front in that order.
+
+    :param data:
+    :return: A new Data object, not back by the old.
+    """
+
+    data_triples = data.triples
+    data_training = data.training
+    data_withheld = data.withheld
+
+    if data.torch:
+        data_triples = data_triples.numpy()
+        data_training = data_training.numpy()
+        data_withheld = data_withheld.numpy()
+
+    # new index to old index
+
+    n2o = []
+    for datatype in data.datatypes():
+        n2o.extend(data.datatype_l2g(datatype))
+
+    o2n = {o: n for n, o in enumerate(n2o)}
+
+    # create the mapped data object
+    nw = Data(dir=None)
+
+    nw.num_entities = len(n2o)
+    nw.num_relations = data.num_relations
+
+    nw.i2e = [data.i2e[o] for o in n2o]
+    nw.e2i = {e: i for i, e in enumerate(nw.i2e)}
+
+    # relations are unchanged but copied for the sake of GC
+    nw.i2r = list(data.i2r)
+    nw.r2i = dict(data.r2i)
+
+    nw.triples = np.zeros(data.triples.shape, dtype=int)
+
+    row = 0
+    for s, p, o in data_triples:
+        s, o = o2n[s], o2n[o]
+        nw.triples[row, :] = (s, p, o)
+        row += 1
 
     nw.training = data_training.copy()
     for i in range(nw.training.shape[0]):

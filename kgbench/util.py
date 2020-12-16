@@ -8,6 +8,7 @@ import PIL
 from PIL import ImageOps
 import numpy as np
 
+import torchvision as tv
 
 tics = []
 
@@ -74,9 +75,10 @@ def load_rdf(rdf_file, name='', format='nt', store_file='./cache'):
 
     return graph
 
-def to_tensorbatches(images, batch_size=16, use_torch=False):
+def to_tvbatches(images, batch_size=16,  min_size=0, dtype=None, prep=tv.transforms.ToTensor()):
     """
-    Transforms a list of PIL images to a list of batch tensors. Images are padded to maintain the same size per batch.
+    Returns a generator over torch batches of tensors, using torchvision transforms to translate from
+    PIL images to tensors.
 
     :param images:
     :param torch:
@@ -87,13 +89,25 @@ def to_tensorbatches(images, batch_size=16, use_torch=False):
     for fr in range(0, len(images), batch_size):
         batch = images[fr:fr+batch_size]
 
-        batches.append(to_tensorbatch(batch, use_torch))
+        yield to_tvbatch(batch, min_size=min_size, dtype=dtype, prep=prep)
 
-    return batches
+def to_tensorbatches(images, batch_size=16, use_torch=False, min_size=0, dtype=None):
+    """
+    Returns a generator over batches of tensors.
 
-def to_tensorbatch(images, use_torch=False, min_size=224):
+    :param images:
+    :param torch:
+    :return:
+    """
 
-    b = len(images)
+    batches = []
+    for fr in range(0, len(images), batch_size):
+        batch = images[fr:fr+batch_size]
+
+        yield to_tensorbatch(batch, use_torch, min_size, dtype)
+
+def to_tensorbatch(images, use_torch=False, min_size=0, dtype=None):
+
     maxw = max(max([img.size[0] for img in images]), min_size)
     maxh = max(max([img.size[1] for img in images]), min_size)
 
@@ -104,7 +118,26 @@ def to_tensorbatch(images, use_torch=False, min_size=224):
         res.append( img.transpose((0, 3, 1, 2)) ) # bchw dim ordering
 
     res = np.concatenate(res, axis=0)
-    return torch.from_numpy(res).double() if use_torch else res
+    res = torch.from_numpy(res) if use_torch else res
+    if dtype is not None:
+        res = res.to(dtype) if use_torch else res.astype(dtype)
+    return res
+
+def to_tvbatch(images, min_size=0, dtype=None, prep=tv.transforms.ToTensor()):
+
+    maxw = max(max([img.size[0] for img in images]), min_size)
+    maxh = max(max([img.size[1] for img in images]), min_size)
+
+    res = []
+    for img in images:
+        img = pad(img, (maxw, maxh))
+        res.append(prep(img)[None, :, :, :])
+
+    res = torch.cat(res, dim=0)
+    if dtype is not None:
+        res = res.to(dtype)
+
+    return res
 
 def pad(im, desired_size):
 
