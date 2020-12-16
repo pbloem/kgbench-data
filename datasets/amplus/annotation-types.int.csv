@@ -1,0 +1,8 @@
+index,annotation
+0,blank_node
+1,http://www.w3.org/2001/XMLSchema#b64string
+2,http://www.w3.org/2001/XMLSchema#date
+3,http://www.w3.org/2001/XMLSchema#decimal
+4,http://www.w3.org/2001/XMLSchema#positiveInteger
+5,iri
+6,none
