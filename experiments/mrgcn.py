@@ -349,12 +349,16 @@ def go(name='aifb', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='
 
         embeddings = []
         for datatype in data.datatypes():
-            if datatype in ['uri', 'blank_node']:
+            if datatype in ['iri', 'blank_node']:
                 print(f'Initializing embedding for datatype {datatype}.')
                 # create random embeddings
                 # -- we will parametrize this part of the input later
                 n = len(data.get_strings(dtype=datatype))
-                embeddings.append(torch.randn(n, emb))
+                nodes = torch.randn(n, emb)
+                if torch.cuda.is_available():
+                    nodes = nodes.cuda()
+
+                embeddings.append(nodes)
 
             elif datatype == 'http://kgbench.info/dt#base64Image':
                 print(f'Computing embeddings for images.')
