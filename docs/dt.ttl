@@ -1,0 +1,33 @@
+@prefix : <http://kgbench.info/dt#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+: a owl:Ontology ;
+    rdfs:label "KGBench Datatype Ontology"@en ;
+    rdfs:comment "A small ontology which provides datatypes to annotate	base64-encoded image, audio, and video data with. "@en ;
+    dc:creator "Bloem, P"^^xsd:string ;
+    dc:creator "van Berkel, L"^^xsd:string ;
+    dc:creator "Wilcke, WX"^^xsd:string ;
+    dc:creator "de Boer, V"^^xsd:string ;
+    rdfs:seeAlso "http://kgbench.info/dt"^^xsd:anyURI .
+
+
+## Classes
+
+:base64Image a rdfs:Datatype ;
+    rdfs:subClassOf xsd:base64Binary ;
+    rdfs:label "Base64-encoded image"@en ;
+    rdfs:comment "An image encoded as a base64 string"@en .
+
+:base64Video a rdfs:Datatype ;
+    rdfs:subClassOf xsd:base64Binary ;
+    rdfs:label "Base64-encoded video"@en ;
+    rdfs:comment "A video encoded as a base64 string"@en .
+
+:base64Audio a rdfs:Datatype ;
+    rdfs:subClassOf xsd:base64Binary ;
+    rdfs:label "Base64-encoded audio"@en ;
+    rdfs:comment "An audio sequence encoded as a base64 string"@en .
