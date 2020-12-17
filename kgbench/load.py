@@ -209,7 +209,7 @@ def load(name, final=False, torch=False, prune_dist=None):
         return micro(final, torch)
         # -- a miniature dataset for unit testing
 
-    if name in ['aifb', 'am1k', 'amfull', 'amplus']:
+    if name in ['aifb', 'am1k', 'amfull', 'amplus', 'mdgenre', 'mdgender']:
         data = Data(here(f'../datasets/{name}'), final=final, use_torch=torch)
     else:
         raise Exception(f'Dataset {name} not recognized.')
