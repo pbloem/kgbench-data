@@ -20,10 +20,10 @@ def entity(ent):
     if type(ent) == rdflib.term.Literal:
         datatype = str(ent.datatype)
         if not datatype:
-            datatype = 'none'
+            datatype = 'unknown'
     else:
         assert str(ent).startswith('http'), "{} does not start with allowed string"
-        datatype = 'uri'
+        datatype = 'iri'
     return str(ent), datatype
 
 
@@ -118,12 +118,12 @@ i2r = list(relations)
 
 i2e.sort(); i2r.sort()
 
-df = pd.DataFrame(enumerate(i2d), columns=['index', 'datatype'])
-df.to_csv('../datatypes.int.csv', index=False, header=True)
+df = pd.DataFrame(enumerate(i2d), columns=['index', 'annotation'])
+df.to_csv('../annotation-types.int.csv', index=False, header=True)
 
 ent_data = [(i, dt, ent) for i, (ent, dt) in enumerate(i2e)]
-df = pd.DataFrame(ent_data, columns=['index', 'datatype', 'label'])
-df.to_csv('../entities.int.csv', index=False, header=True, quoting=csv.QUOTE_NONNUMERIC)
+df = pd.DataFrame(ent_data, columns=['index', 'annotation', 'label'])
+df.to_csv('../nodes.int.csv', index=False, header=True, quoting=csv.QUOTE_NONNUMERIC)
 
 df = pd.DataFrame(enumerate(i2r), columns=['index', 'label'])
 df.to_csv('../relations.int.csv', index=False, header=True, quoting=csv.QUOTE_NONNUMERIC)
@@ -132,13 +132,13 @@ e2i = {e: i for i, e in enumerate(i2e)}
 r2i = {r: i for i, r in enumerate(i2r)}
 
 for file in ['training', 'testing', 'validation', 'meta-testing']:
-    df = pd.read_csv(file + '.csv')
+    df = pd.read_csv("../" + file + '.csv')
     classes = df.cls
     instances = df.instance
-    intinstances = instances.map(lambda ent : e2i[(ent, 'uri')])
+    intinstances = instances.map(lambda ent : e2i[(ent, 'iri')])
     # -- all instances have datatype uri
 
-    pd.concat([intinstances, classes], axis=1).to_csv(file + '.int.csv', index=False, header=False)
+    pd.concat([intinstances, classes], axis=1).to_csv("../" + file + '.int.csv', index=False, header=False)
 
 ## Convert stripped triples to integer triples
 print('Writing integer triples.')
