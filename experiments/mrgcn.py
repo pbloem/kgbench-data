@@ -330,7 +330,7 @@ def pca(tensor, target_dim):
 
     return res
 
-def go(name='amplus', lr=0.01, wd=0.0, l2=5e-4, epochs=50, prune=True, optimizer='adam', final=False, emb=16, bases=40, printnorms=None):
+def go(name='amplus', lr=0.01, wd=0.0, l2=5e-4, epochs=50, prune=True, optimizer='adam', final=False, emb=16, bases=40, printnorms=None, imagebatch=256, stringbatch=50_000):
 
     # bert_emb(['.....', '.', '..', '...', '....'], bs_chars = 50_000)
 
@@ -362,14 +362,14 @@ def go(name='amplus', lr=0.01, wd=0.0, l2=5e-4, epochs=50, prune=True, optimizer
 
             elif datatype == 'http://kgbench.info/dt#base64Image':
                 print(f'Computing embeddings for images.')
-                image_embeddings = mobilenet_emb(data.get_images())
+                image_embeddings = mobilenet_emb(data.get_images(), bs=imagebatch)
                 image_embeddings = pca(image_embeddings, target_dim=emb)
                 embeddings.append(image_embeddings)
 
             else:
                 # embed literal strings with DistilBERT
                 print(f'Computing embeddings for datatype {datatype}.')
-                string_embeddings = bert_emb(data.get_strings(dtype=datatype), bs_chars=50_000)
+                string_embeddings = bert_emb(data.get_strings(dtype=datatype), bs_chars=stringbatch)
                 string_embeddings = pca(string_embeddings, target_dim=emb)
                 embeddings.append(string_embeddings)
 
