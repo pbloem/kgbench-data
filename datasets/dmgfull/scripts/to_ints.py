@@ -95,7 +95,7 @@ with open('all.int.csv', 'w') as allfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['index', 'class'])
         for s, p, o in g_train.triples((None, None, None)):
-            s_idx = e2i[s]
+            s_idx = e2i[(str(s), 'iri')]
             o_idx = c2i[o]
 
             writer.writerow([s_idx, o_idx])
@@ -105,7 +105,7 @@ with open('all.int.csv', 'w') as allfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['index', 'class'])
         for s, p, o in g_test.triples((None, None, None)):
-            s_idx = e2i[s]
+            s_idx = e2i[(str(s), 'iri')]
             o_idx = c2i[o]
 
             writer.writerow([s_idx, o_idx])
@@ -115,7 +115,7 @@ with open('all.int.csv', 'w') as allfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['index', 'class'])
         for s, p, o in g_valid.triples((None, None, None)):
-            s_idx = e2i[s]
+            s_idx = e2i[(str(s), 'iri')]
             o_idx = c2i[o]
 
             writer.writerow([s_idx, o_idx])
