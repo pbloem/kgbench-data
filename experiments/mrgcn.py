@@ -250,11 +250,13 @@ def mobilenet_emb(pilimages, bs=512):
     imagegen = kg.to_tvbatches(pilimages, batch_size=bs, prep=prep, min_size=224, dtype=torch.float32)
 
     for batch in tqdm.tqdm(imagegen, total=nimages // bs):
+        bn, c, h, w = batch.size
         if torch.cuda.is_available():
             batch = batch.cuda()
 
         out = model.features(batch)
-        image_embeddings.append(out.view(bs, -1))
+        image_embeddings.append(out.view(bn, -1))
+        # print(image_embeddings[-1].size())
 
     return torch.cat(image_embeddings, dim=0)
 
