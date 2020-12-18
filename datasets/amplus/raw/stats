@@ -1,0 +1,12 @@
+Facts: 6052788
+Predicates: 133
+Entities: 1026211
+Literals: 2737704
+Literals Unique: 695709
+[DTYPE] http://www.w3.org/2001/XMLSchema#b64string: 59100
+[DTYPE] http://www.w3.org/2001/XMLSchema#date: 490757
+[DTYPE] http://www.w3.org/2001/XMLSchema#string: 1393093
+[DTYPE] http://www.w3.org/2001/XMLSchema#boolean: 133932
+[DTYPE] http://www.w3.org/2001/XMLSchema#positiveInteger: 472959
+[DTYPE] http://www.w3.org/2001/XMLSchema#decimal: 150342
+[DTYPE] http://www.w3.org/2001/XMLSchema#gYear: 36129
