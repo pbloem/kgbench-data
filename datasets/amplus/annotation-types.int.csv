@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:878b25f067f04d2ea9911dcb3a88554c35abf4c4f2997bb837baa3e2d864ec8d
-size 214
+index,annotation
+0,blank_node
+1,http://kgbench.info/dt#base64Image
+2,http://www.w3.org/2001/XMLSchema#date
+3,http://www.w3.org/2001/XMLSchema#decimal
+4,http://www.w3.org/2001/XMLSchema#positiveInteger
+5,iri
+6,none

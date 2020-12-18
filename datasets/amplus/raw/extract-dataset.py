@@ -222,7 +222,7 @@ for file in ['training', 'testing', 'validation', 'meta-testing']:
     intinstances = instances.map(lambda ent : e2i[(ent, 'uri')])
     # -- all instances have datatype uri
 
-    pd.concat([intinstances, classes], axis=1).to_csv(file + '.int.csv', index=False, header=False)
+    pd.concat([intinstances, classes], axis=1).to_csv(file + '.int.csv', index=False, header=True)
 
 ## Convert stripped triples to integer triples
 triples, c = stripped.search_triples('', '', '')
