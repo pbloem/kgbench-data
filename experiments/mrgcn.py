@@ -308,7 +308,7 @@ def bert_emb_(strings, bs_chars, ):
 
         out = bmodel(inputs, mask)
 
-        outs.append(out[0][:, 0, :]) # use only the CLS token
+        outs.append(out[0][:, 0, :].to('cpu')) # use only the CLS token
 
         pbar.update(len(strbatch))
         fr = to
