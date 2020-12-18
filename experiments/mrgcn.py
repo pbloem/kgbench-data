@@ -255,7 +255,7 @@ def mobilenet_emb(pilimages, bs=512):
             batch = batch.cuda()
 
         out = model.features(batch)
-        image_embeddings.append(out.view(bn, -1))
+        image_embeddings.append(out.view(bn, -1).to('cpu'))
         # print(image_embeddings[-1].size())
 
     return torch.cat(image_embeddings, dim=0)
