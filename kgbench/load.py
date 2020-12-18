@@ -224,7 +224,7 @@ def load(name, final=False, torch=False, prune_dist=None):
         return micro(final, torch)
         # -- a miniature dataset for unit testing
 
-    if name in ['aifb', 'am1k', 'amplus', 'dblp', 'mdgenre', 'mdgender', 'dmgfull']:
+    if name in ['aifb', 'am1k', 'amplus', 'dblp', 'mdgenre', 'mdgender', 'dmgfull', 'dmg832k']:
         tic()
         data = Data(here(f'../datasets/{name}'), final=final, use_torch=torch)
         print(f'loaded data {name} ({toc():.4}s).')

@@ -58,7 +58,7 @@ def has_feature(inst, feat, rels, inrels, outrels, infull, outfull):
         return (feat[0], feat[2]) in dict[inst] if inst in dict else False
 
 
-def go(name='amplus', final=False, numfeatures=2000):
+def go(name='dblp', final=False, numfeatures=2000):
 
     print('arguments: ', ' '.join([f'{k}={v}' for k, v in locals().items()]))
 

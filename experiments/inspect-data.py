@@ -6,7 +6,7 @@ import kgbench as kg
 Load a dataset and print statistics.
 """
 
-def go(name='amplus'):
+def go(name='dblp'):
     kg.load(name)
 
     print('arguments: ', ' '.join([f'{k}={v}' for k, v in locals().items()]))
