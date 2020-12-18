@@ -330,7 +330,7 @@ def pca(tensor, target_dim):
 
     return res
 
-def go(name='aifb', lr=0.01, wd=0.0, l2=0.0, epochs=50, prune=False, optimizer='adam', final=False, emb=16, bases=None, printnorms=None):
+def go(name='amplus', lr=0.01, wd=0.0, l2=5e-4, epochs=50, prune=True, optimizer='adam', final=False, emb=16, bases=40, printnorms=None):
 
     # bert_emb(['.....', '.', '..', '...', '....'], bs_chars = 50_000)
 

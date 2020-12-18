@@ -9,49 +9,66 @@ from skimage import io as skio
 
 import torch
 
+"""
+Data loading utilities
+
+TODO:
+- create getters and setters for all object members
+- rename entities to nodes
+- rename datatype to annotation
+
+
+"""
+
 class Data:
     """
     Class representing a dataset.
 
     """
 
-    triples = None
-    """ The edges of the knowledge graph (the triples), represented by their integer indices. A (m, 3) numpy 
-        or pytorch array.
-    """
-
-    i2r, r2i = None, None
-
-    i2e = None
-    """ A mapping from an integer index to an entity representation. An entity is either a simple string indicating the label 
-        of the entity (a url, blank node or literal), or it is a pair indicating the datatype and the label (in that order).
-    """
-
-    e2i = None
-    """ A dictionary providing the inverse mappring of i2e
-    """
-
-    num_entities = None
-    """ Total number of distinct entities (nodes) in the graph """
-
-    num_relations = None
-    """ Total number of distinct relation types in the graph """
-
-    num_classes = None
-    """ Total number of classes in the classification task """
-
-    training = None
-    """ Training data: a matrix with entity indices in column 0 and class indices in column 1.
-        In non-final mode, this is the training part of the train/val/test split. In final mode, the training part, 
-        possibly concatenated with the validation data.
-    """
-
-    withheld = None
-    """ Validation/testing data: a matrix with entity indices in column 0 and class indices in column 1.
-        In non-final mode this is the validation data. In final mode this is the testing data.
-    """
 
     def __init__(self, dir, final=False, use_torch=False, catval=False):
+
+        self.triples = None
+        """ The edges of the knowledge graph (the triples), represented by their integer indices. A (m, 3) numpy 
+            or pytorch array.
+        """
+
+        self.i2r, self.r2i = None, None
+
+        self.i2e = None
+        """ A mapping from an integer index to an entity representation. An entity is either a simple string indicating the label 
+            of the entity (a url, blank node or literal), or it is a pair indicating the datatype and the label (in that order).
+        """
+
+        self.e2i = None
+        """ A dictionary providing the inverse mappring of i2e
+        """
+
+        self.num_entities = None
+        """ Total number of distinct entities (nodes) in the graph """
+
+        self.num_relations = None
+        """ Total number of distinct relation types in the graph """
+
+        self.num_classes = None
+        """ Total number of classes in the classification task """
+
+        self.training = None
+        """ Training data: a matrix with entity indices in column 0 and class indices in column 1.
+            In non-final mode, this is the training part of the train/val/test split. In final mode, the training part, 
+            possibly concatenated with the validation data.
+        """
+
+        self.withheld = None
+        """ Validation/testing data: a matrix with entity indices in column 0 and class indices in column 1.
+            In non-final mode this is the validation data. In final mode this is the testing data.
+        """
+
+        self._dt_l2g = {}
+        self._dt_g2l = {}
+
+        self._datatypes = None
         if dir is not None:
             self.torch = use_torch
 
@@ -93,7 +110,6 @@ class Data:
                 self.training = torch.from_numpy(self.training)
                 self.withheld = torch.from_numpy(self.withheld)
 
-
     def get_images(self, dtype='http://kgbench.info/dt#base64Image'):
         """
         Retrieves the entities with the given datatype as PIL image objects.
@@ -107,7 +123,12 @@ class Data:
         # Take in base64 string and return cv image
         num_noparse = 0
         for b64 in self.get_strings(dtype):
-            imgdata = base64.urlsafe_b64decode(b64)
+            try:
+                imgdata = base64.urlsafe_b64decode(b64)
+            except:
+                print(f'Could not decode b64 string {b64}')
+                sys.exit()
+
             try:
                 res.append(Image.open(io.BytesIO(imgdata)))
             except:
@@ -122,8 +143,6 @@ class Data:
 
         return res
 
-    _dt_l2g = {}
-    _dt_g2l = {}
     def datatype_g2l(self, dtype, copy=True):
         """
         Returns a list mapping a global index of an entity (the indexing over all nodes) to its _local index_ the indexing
@@ -159,7 +178,6 @@ class Data:
         """
         return [self.i2e[g][0] for g in self.datatype_l2g(dtype)]
 
-    _datatypes = None
     def datatypes(self, i = None):
         """
         :return: If i is None:a list containing all datatypes present in this dataset (including literals without datatype, URIs and
@@ -407,10 +425,10 @@ def group(data : Data):
     Groups the dataset by datatype. That is, reorders the nodes so that all nodes of data.datatypes(0) come first,
     followed by the nodes of datatype(1), and so on.
 
-    The datatypes 'uri', 'blank_node' and 'none' are guaranteed to be sorted to the front in that order.
+    The datatypes 'iri', 'blank_node' and 'none' are guaranteed to be sorted to the front in that order.
 
     :param data:
-    :return: A new Data object, not back by the old.
+    :return: A new Data object, not backed by the old.
     """
 
     data_triples = data.triples
@@ -423,10 +441,11 @@ def group(data : Data):
         data_withheld = data_withheld.numpy()
 
     # new index to old index
-
     n2o = []
     for datatype in data.datatypes():
         n2o.extend(data.datatype_l2g(datatype))
+
+    assert set(n2o) == set(range(len(n2o)))
 
     o2n = {o: n for n, o in enumerate(n2o)}
 
