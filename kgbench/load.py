@@ -70,11 +70,10 @@ class Data:
 
         self._datatypes = None
         if dir is not None:
+
             self.torch = use_torch
 
-            tic()
             self.triples = fastload(j(dir, 'triples.int.csv.gz'))
-            print(f'loaded triples ({toc():.4}s).')
 
             self.i2r, self.r2i = load_indices(j(dir, 'relations.int.csv'))
             self.i2e, self.e2i = load_entities(j(dir, 'nodes.int.csv'))
@@ -83,9 +82,9 @@ class Data:
             self.num_relations = len(self.i2r)
 
             train, val, test = \
-                np.loadtxt(j(dir, 'training.int.csv'),   dtype=np.int, delimiter=','), \
-                np.loadtxt(j(dir, 'validation.int.csv'), dtype=np.int, delimiter=','), \
-                np.loadtxt(j(dir, 'testing.int.csv'),    dtype=np.int, delimiter=',')
+                np.loadtxt(j(dir, 'training.int.csv'),   dtype=np.int, delimiter=',', skiprows=1), \
+                np.loadtxt(j(dir, 'validation.int.csv'), dtype=np.int, delimiter=',', skiprows=1), \
+                np.loadtxt(j(dir, 'testing.int.csv'),    dtype=np.int, delimiter=',', skiprows=1)
 
             if final and catval:
                 self.training = np.concatenate([train, val], axis=0)
@@ -101,9 +100,7 @@ class Data:
 
             self.num_classes = len(set(self.training[:, 1]))
 
-            print('loaded data.')
-
-            print(f'   {len(self.triples)} triples')
+            # print(f'   {len(self.triples)} triples')
 
             if use_torch: # this should be constant-time/memory
                 self.triples = torch.from_numpy(self.triples)
@@ -227,8 +224,11 @@ def load(name, final=False, torch=False, prune_dist=None):
         return micro(final, torch)
         # -- a miniature dataset for unit testing
 
-    if name in ['aifb', 'am1k', 'amfull', 'amplus', 'mdgenre', 'mdgender']:
+    if name in ['aifb', 'am1k', 'amfull', 'amplus', 'mdgenre', 'mdgender', 'dmgfull']:
+        tic()
         data = Data(here(f'../datasets/{name}'), final=final, use_torch=torch)
+        print(f'loaded data {name} ({toc():.4}s).')
+
     else:
         raise Exception(f'Dataset {name} not recognized.')
 

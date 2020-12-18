@@ -2,7 +2,7 @@
 Run the RGCN baseline of the given dataset
 """
 
-import fire, sys
+import fire, sys, tqdm
 
 from kgbench import load, tic, toc, d
 import numpy as np
@@ -58,7 +58,8 @@ def has_feature(inst, feat, rels, inrels, outrels, infull, outfull):
         return (feat[0], feat[2]) in dict[inst] if inst in dict else False
 
 
-def go(name='amfull', final=False, numfeatures=2000):
+def go(name='amplus', final=False, numfeatures=2000):
+
     print('arguments: ', ' '.join([f'{k}={v}' for k, v in locals().items()]))
 
     data = load(name, torch=False, prune_dist=1, final=final)
@@ -79,7 +80,8 @@ def go(name='amfull', final=False, numfeatures=2000):
     infull, outfull = {}, {}
 
     # Create some dictionaries for easy access
-    for s, p, o in data.triples:
+    print('Creating dicts.')
+    for s, p, o in tqdm.tqdm(data.triples):
 
         if s not in rels:
             rels[s] = set()
@@ -106,7 +108,8 @@ def go(name='amfull', final=False, numfeatures=2000):
 
     # Compute the features
     # - Tallies for all features
-    for i in range(data.training.shape[0]):
+    print('Tallying features.')
+    for i in tqdm.trange(data.training.shape[0]):
 
         inst, cls = data.training[i, :]
 
@@ -188,11 +191,11 @@ def go(name='amfull', final=False, numfeatures=2000):
 
     instances_wh = np.asarray(instances_wh)
 
-
+    print('Fitting model.')
     lr = LogisticRegression(multi_class='multinomial', max_iter=10_00)
     lr.fit(instances, classes)
 
-    print('model fitted')
+    print('Model fitted.')
     print(f'   training acc {lr.score(instances, classes)}')
     print(f'   withheld acc {lr.score(instances_wh, classes_wh)}')
 
