@@ -1,0 +1,17 @@
+index,annotation
+0,@en-gb
+1,@es
+2,@fy
+3,@nl
+4,@nl-nl
+5,@pt
+6,@ru
+7,http://kgbench.info/dt#base64Image
+8,http://www.opengis.net/ont/geosparql#wktLiteral
+9,http://www.w3.org/2001/XMLSchema#anyURI
+10,http://www.w3.org/2001/XMLSchema#boolean
+11,http://www.w3.org/2001/XMLSchema#gYear
+12,http://www.w3.org/2001/XMLSchema#nonNegativeInteger
+13,http://www.w3.org/2001/XMLSchema#positiveInteger
+14,iri
+15,none

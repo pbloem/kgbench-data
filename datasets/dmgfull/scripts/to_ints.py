@@ -10,7 +10,7 @@ import kgbench as kg
 
 """
 
-doc = hdt.HDTDocument('DMGfull_stripped.hdt')
+doc = hdt.HDTDocument('DMGFull-stripped.hdt')
 
 entities = set()
 relations = set()
@@ -67,7 +67,7 @@ with gzip.open('triples.int.csv.gz', 'wt') as file:
 
         file.write(f'{e2i[sp]}, {r2i[p]}, {e2i[op]}\n')
 
-# Load test/train/valid
+# Load test/train/valid/meta
 g_train = Graph()
 with gzip.open('./train_set.nt.gz', 'rb') as gzf:
     g_train.parse(gzf, format='nt')
@@ -77,10 +77,13 @@ with gzip.open('./test_set.nt.gz', 'rb') as gzf:
 g_valid = Graph()
 with gzip.open('./valid_set.nt.gz', 'rb') as gzf:
     g_valid.parse(gzf, format='nt')
+g_meta = Graph()
+with gzip.open('./meta_set.nt.gz', 'rb') as gzf:
+    g_meta.parse(gzf, format='nt')
 
 c2i = dict()
 i = 0
-for g in [g_train, g_test, g_valid]:
+for g in [g_train, g_test, g_valid, g_meta]:
     classes = set(g.objects())
     for c in classes:
         if c not in c2i.keys():
@@ -121,3 +124,12 @@ with open('all.int.csv', 'w') as allfile:
             writer.writerow([s_idx, o_idx])
             allwriter.writerow([s_idx, o_idx])
 
+    with open('meta-testing.int.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(['index', 'class'])
+        for s, p, o in g_meta.triples((None, None, None)):
+            s_idx = e2i[(str(s), 'iri')]
+            o_idx = c2i[o]
+
+            writer.writerow([s_idx, o_idx])
+            allwriter.writerow([s_idx, o_idx])
