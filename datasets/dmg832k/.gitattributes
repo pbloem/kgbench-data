@@ -1,0 +1,9 @@
+nodes.int.csv filter=lfs diff=lfs merge=lfs -text
+triples.int.csv.gz filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k_valid_set.nt.gz filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k-stripped.hdt filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k_unstripped.hdt filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k-stripped.nt.gz filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k_context.nt.gz filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k_test_set.nt.gz filter=lfs diff=lfs merge=lfs -text
+raw/DMG832k_train_set.nt.gz filter=lfs diff=lfs merge=lfs -text

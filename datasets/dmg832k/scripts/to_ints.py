@@ -10,7 +10,7 @@ import kgbench as kg
 
 """
 
-doc = hdt.HDTDocument('DMG832k_stripped.hdt')
+doc = hdt.HDTDocument('DMG832k-stripped.hdt')
 
 entities = set()
 relations = set()
