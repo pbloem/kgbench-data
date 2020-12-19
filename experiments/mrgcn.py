@@ -320,6 +320,10 @@ def pca(tensor, target_dim):
     Applies PCA to a torch matrix to reduce it to the target dimension
     """
 
+    n, f = tensor.size()
+    if n < 3: # no point in PCA, just clip
+        return tensor[:, :target_dim]
+
     if tensor.is_cuda:
         tensor = tensor.to('cpu')
     model = PCA(n_components=target_dim, whiten=True)
