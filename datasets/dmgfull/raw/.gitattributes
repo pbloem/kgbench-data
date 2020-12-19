@@ -1,0 +1,2 @@
+*.nt.gz filter=lfs diff=lfs merge=lfs -text
+*.hdt filter=lfs diff=lfs merge=lfs -text
