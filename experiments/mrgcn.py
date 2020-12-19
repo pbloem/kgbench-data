@@ -321,7 +321,7 @@ def pca(tensor, target_dim):
     """
 
     n, f = tensor.size()
-    if n < 3: # no point in PCA, just clip
+    if n < 25: # no point in PCA, just clip
         return tensor[:, :target_dim]
 
     if tensor.is_cuda:
