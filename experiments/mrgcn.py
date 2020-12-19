@@ -322,14 +322,14 @@ def pca(tensor, target_dim):
 
     n, f = tensor.size()
     if n < 25: # no point in PCA, just clip
-        return tensor[:, :target_dim]
+       res = tensor[:, :target_dim]
+    else:
+        if tensor.is_cuda:
+            tensor = tensor.to('cpu')
+        model = PCA(n_components=target_dim, whiten=True)
 
-    if tensor.is_cuda:
-        tensor = tensor.to('cpu')
-    model = PCA(n_components=target_dim, whiten=True)
-
-    res = model.fit_transform(tensor)
-    res =  torch.from_numpy(res)
+        res = model.fit_transform(tensor)
+        res =  torch.from_numpy(res)
 
     if torch.cuda.is_available():
         res = res.cuda()

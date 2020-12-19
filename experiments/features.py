@@ -58,7 +58,7 @@ def has_feature(inst, feat, rels, inrels, outrels, infull, outfull):
         return (feat[0], feat[2]) in dict[inst] if inst in dict else False
 
 
-def go(name='dblp', final=False, numfeatures=2000):
+def go(name='dmg832k', final=False, numfeatures=2_000, printweights=False):
 
     print('arguments: ', ' '.join([f'{k}={v}' for k, v in locals().items()]))
 
@@ -67,6 +67,8 @@ def go(name='dblp', final=False, numfeatures=2000):
     print(f'{data.triples.shape[0]} triples')
     print(f'{data.num_entities} entities')
     print(f'{data.num_relations} relations')
+
+    print(f'{data.training.shape[0]} training instances')
 
     tic()
 
@@ -195,9 +197,22 @@ def go(name='dblp', final=False, numfeatures=2000):
     lr = LogisticRegression(multi_class='multinomial', max_iter=10_00)
     lr.fit(instances, classes)
 
+
     print('Model fitted.')
     print(f'   training acc {lr.score(instances, classes)}')
     print(f'   withheld acc {lr.score(instances_wh, classes_wh)}')
+
+    if printweights:
+
+        print(lr.coef_.shape) # classes x features
+        pairs = [(c, feat) for c, feat in zip(lr.coef_.T, i2f)]
+
+        pairs.sort(key=lambda p : - np.linalg.norm(p[0]))
+
+        for c, f in pairs:
+            print(np.linalg.norm(c), f, data.i2r[f[0]], data.i2e[f[2]] if len(f) > 2 else '')
+
+
 
 if __name__ == '__main__':
 

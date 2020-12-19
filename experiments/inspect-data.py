@@ -6,7 +6,8 @@ import kgbench as kg
 Load a dataset and print statistics.
 """
 
-def go(name='dblp'):
+def go(name='dmg832k'):
+
     kg.load(name)
 
     print('arguments: ', ' '.join([f'{k}={v}' for k, v in locals().items()]))
@@ -31,8 +32,13 @@ def go(name='dblp'):
     print(f'{data.training.shape[0]} training instances.')
     print(f'{data.withheld.shape[0]} validation instances.')
 
-    data = kg.load(name, torch=False, prune_dist=None, final=False)
+    data = kg.load(name, torch=False, prune_dist=None, final=True)
     print(f'{data.withheld.shape[0]} test instances.')
+    print()
+
+    for rel in data.i2r:
+        print(rel)
+
 
 if __name__ == '__main__':
 
