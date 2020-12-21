@@ -10,7 +10,7 @@ import kgbench as kg
 
 """
 
-doc = hdt.HDTDocument('DMGFull-stripped.hdt')
+doc = hdt.HDTDocument('raw/dmgFull_stripped.hdt')
 
 entities = set()
 relations = set()
@@ -69,16 +69,16 @@ with gzip.open('triples.int.csv.gz', 'wt') as file:
 
 # Load test/train/valid/meta
 g_train = Graph()
-with gzip.open('./train_set.nt.gz', 'rb') as gzf:
+with gzip.open('raw/train_set.nt.gz', 'rb') as gzf:
     g_train.parse(gzf, format='nt')
 g_test = Graph()
-with gzip.open('./test_set.nt.gz', 'rb') as gzf:
+with gzip.open('raw/test_set.nt.gz', 'rb') as gzf:
     g_test.parse(gzf, format='nt')
 g_valid = Graph()
-with gzip.open('./valid_set.nt.gz', 'rb') as gzf:
+with gzip.open('raw/valid_set.nt.gz', 'rb') as gzf:
     g_valid.parse(gzf, format='nt')
 g_meta = Graph()
-with gzip.open('./meta_set.nt.gz', 'rb') as gzf:
+with gzip.open('raw/meta_set.nt.gz', 'rb') as gzf:
     g_meta.parse(gzf, format='nt')
 
 c2i = dict()

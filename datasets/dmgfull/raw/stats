@@ -1,0 +1,13 @@
+Facts: 1882441
+Predicates: 63
+Entities: 262494
+Literals: 1289150
+Literals Unique: 581150
+[DTYPE] http://www.opengis.net/ont/geosparql#wktLiteral: 121217
+[DTYPE] http://www.w3.org/2001/XMLSchema#nonNegativeInteger: 63565
+[DTYPE] http://www.w3.org/2001/XMLSchema#string: 860640
+[DTYPE] http://www.w3.org/2001/XMLSchema#anyURI: 145846
+[DTYPE] http://www.w3.org/2001/XMLSchema#gYear: 23944
+[DTYPE] http://www.w3.org/2001/XMLSchema#positiveInteger: 659
+[DTYPE] http://kgbench.info/dt#base64Image: 58846
+[DTYPE] http://www.w3.org/2001/XMLSchema#boolean: 8838
