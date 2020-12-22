@@ -15,9 +15,16 @@ Each dataset is stored under the direction `datasets`, each in its own directory
 
 # Datasets
 
-## amfull
+## amFull
 
-Like the Legacy AM dataset (in the repository as am1k), this features the metadata for the collection of the Amsterdam Museum. The classification task is to 
+Like the Legacy AM dataset (in the repository as am1k), this features the metadata for the collection of the Amsterdam
+Museum, but has been extended to also include images. If used for classification, the task is to predict the type of an
+artefact.
+
+### amPlus
+
+An extension of the legacy AM, with added datatype annotations and images.
+
 
 ## dmgFull
 
@@ -30,6 +37,20 @@ classification, the task is to predict the type of monuments, such as `building`
 
 A subset of the DMG which only contains information about the top-5 monument classes. This version is suitable for GPU
 use.
+
+## dplp
+
+A large bibliographic dataset of publications in the domain of _computer science_, enriched with citation numbers and
+author background data (extracted from Wikipedia). If used for classification, the task is to discriminate between
+publication which only have one citation, and those which have more (a more-or-less median split).
+
+
+## mdgender / mdgenre
+
+A dataset about award-winning movies, which features information from Wikipedia about these movies and about the people involved in making them.
+Also included are images of actors and of movie posters. If used for classification, the task can be
+either to predict movie genre or to predict the gender of the actor (for a discussion of the ethics involved in this
+task we refer to our paper).
 
 
 # Datatypes
@@ -56,4 +77,12 @@ In our datasets, every media type uses a uniform choice of codec (that is, all i
 
 ## Legacy
 
-The following legacy datasets are added as a record, and to check the correct implementations of our baselines. In general they are less suitable for benchmarking than the datasets described above. 
+The following legacy datasets are added as a record, and to check the correct implementations of our baselines. In general they are less suitable for benchmarking than the datasets described above.
+
+### AIFB
+
+This is the legacy AIFB dataset, but with added datatype annotations.
+
+### AM1k
+
+This is the legacy AM dataset
