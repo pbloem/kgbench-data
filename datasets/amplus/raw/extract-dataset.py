@@ -80,7 +80,7 @@ map['http://purl.org/collections/nl/am/t-22506'] = 'Paintings'
 
 map['http://purl.org/collections/nl/am/t-22507'] = 'Decorative art'
 # beeldencollectie 	943
-# Sculpture (?)
+# Sculpture
 
 map['http://purl.org/collections/nl/am/t-22508'] = 'Metallic art'
 # edele metalencollectie 	3533
@@ -132,7 +132,10 @@ df['cls'] = df.cls_label.cat.codes
 df.to_csv('all.csv', sep=',', index=False, header=True)
 print('Created dataframe. Class frequencies:')
 print(df.cls_label.value_counts(normalize=False))
+sys.exit()
+
 print(df.cls_label.value_counts(normalize=True))
+
 
 # * Split train, validation and test sets
 

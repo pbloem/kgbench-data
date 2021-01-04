@@ -1,0 +1,8 @@
+index,datatype
+0,blank_node
+1,http://kgbench.info/dt#base64Image
+2,http://www.w3.org/2001/XMLSchema#date
+3,http://www.w3.org/2001/XMLSchema#decimal
+4,http://www.w3.org/2001/XMLSchema#positiveInteger
+5,none
+6,uri
