@@ -96,29 +96,14 @@ The following datasets are available for unit testing:
 
 ## Datatypes
 
-To describe the various modalities in the data, existing datatype specifications aren't always sufficient. For our 
-purposes, we introduce the new datatype entities for media in byte representation, string in a string-encoded form in a 
-literal. They have the following format
+KGBench datasets contain byte-to-string encoded literals. These string literals encode byte-level data, potentially containing images, video or audio (although only images are currently used in the datasets).
 
-```http://krrvu.github.io/kgbench/dt#[media]-[string-encoding][-media-encoding]```
+We define the following datatypes:
+ 
+ * [http://kgbench.info/dt#base64Image](http://kgbench.info/dt.ttl) An image encoded as a base64 string. 
+ * [http://kgbench.info/dt#base64Audio](http://kgbench.info/dt.ttl) An audio sequence encoded as a base64 string.
+ * [http://kgbench.info/dt#base64Video](http://kgbench.info/dt.ttl) A video encoded as a base64String.
 
-Media types can be one of: `image`, `audio`, `video`. `string-encoding` is `b64string` for a base64 encoding. Other encodings are currently not specified.
+In most cases this information is sufficient to correctly decode the byte-level information. To provide a fully unambiguous definition of how a literal should be decoded, it is necessary also to specify its MIME-type. This can be done by adding extra statements to the graph, but this is outside the scope of the `kgbench` project. 
 
-The media-encoding may be ommitted if it can be inferred from the byte-level representation of the file. If it is present 
-it serves as a _hint_ towards the way the byte-level representation should be decoded, in the same way that file extensions do
-
-Some examples:
-```
-# for an image without specified codec
-http://krrvu.github.io/kgbench/dt#image-b64string
-
-# for a jpg-encoded image
-http://krrvu.github.io/kgbench/dt#image-b64string-jpg
-
-# for a wav-encoded audio file
-http://krrvu.github.io/kgbench/dt#audio-b64string-wav
-
-# for a video file we specify either no internal encoding or the container type
-http://krrvu.github.io/kgbench/dt#video-b64string
-http://krrvu.github.io/kgbench/dt#video-b64string-mkv
-```
+In our datasets, every media type uses a uniform choice of codec (that is, all images are either JPEG or PNG, but these are not mixed within one dataset). This choice is specified in the dataset metadata.
