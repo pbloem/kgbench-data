@@ -58,7 +58,7 @@ def has_feature(inst, feat, rels, inrels, outrels, infull, outfull):
         return (feat[0], feat[2]) in dict[inst] if inst in dict else False
 
 
-def go(name='dmg832k', final=False, numfeatures=2_000, printweights=False):
+def go(name='mdgenre', final=True, numfeatures=2_000, printweights=False):
 
     print('arguments: ', ' '.join([f'{k}={v}' for k, v in locals().items()]))
 

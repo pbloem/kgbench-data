@@ -6,7 +6,7 @@ import kgbench as kg
 Load a dataset and print statistics.
 """
 
-def go(name='dmg832k'):
+def go(name='dblp'):
 
     kg.load(name)
 
