@@ -1,0 +1,5 @@
+raw/am-stripped.hdt filter=lfs diff=lfs merge=lfs -text
+raw/am-stripped.hdt.index.v1-1 filter=lfs diff=lfs merge=lfs -text
+raw/am-stripped.nt filter=lfs diff=lfs merge=lfs -text
+raw/am-stripped.nt.gz filter=lfs diff=lfs merge=lfs -text
+raw/archive/am-combined.nt filter=lfs diff=lfs merge=lfs -text
