@@ -1,7 +1,0 @@
-index,annotation
-0,http://kgbench.info/dt#base64Image
-1,http://www.w3.org/1999/02/22-rdf-syntax-ns#langString
-2,http://www.w3.org/2001/XMLSchema#dateTime
-3,http://www.w3.org/2001/XMLSchema#decimal
-4,http://www.w3.org/2001/XMLSchema#string
-5,iri

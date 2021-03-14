@@ -15,8 +15,6 @@ def divide_members(members, test_ratio, valid_ratio, meta_ratio):
     meta_portion = ceil(num_members * meta_ratio)
     train_portion = num_members - test_portion - valid_portion - meta_portion
 
-    assert train_portion > test_portion
-
     return (members[:train_portion],
             members[train_portion:train_portion+test_portion],
             members[train_portion+test_portion:num_members-meta_portion],
