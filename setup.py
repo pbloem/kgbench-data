@@ -4,13 +4,16 @@ setup(
     name="kgbench",
     version="0.1",
     description="A set of benchmark datasets for knowledge graph node classification",
-    url="",
-    author="Peter Bloem (Vrije Universiteit), Xander Wilcke, Lucas van Berkel, Victor de Boer",
+    url="https://kgbench.info",
+    author="Peter Bloem (Vrije Universiteit), Xander Wilcke (Vrije Universiteit), Lucas van Berkel, Victor de Boer (Vrije Universiteit)",
     author_email="kgbench@peterbloem.nl",
     packages=["kgbench"],
     install_requires=[
         "numpy",
         "torch",
+        "torchvision",
+        "Pillow",
+        "scikit-image",
         "rdflib",
         "hdt"
     ],

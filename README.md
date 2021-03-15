@@ -53,7 +53,7 @@ These are all the attributes required to implement a classifier for the **relati
  * `data.datatype_l2g(dtype)` Maps local to global indices.
  * `data.get_images()` Returns the images in the dataset (in order of local index) as a list of PIL image objects. Utility function are provided to process and batch these (see the mrgcn experiment for an example).
 
-The `scripts/` directory contains the scripts needed to convert any RDF knowledge graph to the format listed above, allowing it to be imported using the kgbench dataloader.
+The `scripts` directory contains the scripts needed to convert any RDF knowledge graph to the format listed above, allowing it to be imported using the kgbench dataloader.
 
 ## Experiments
 
@@ -68,6 +68,7 @@ Each datasets is laid out in the following files:
  * `training.int.csv`, `validation.int.csv` , `testing.int.csv` The node labels. The first column is the node index, the second is the class. Note that these CSV files have headers.
  * `meta-testing.int.csv` Metatesting split. You probably don't need to touch this.
  * `nodes.int.csv` String representations and annotations for each node index.
+ * `nodetypes.int.csv` Indexed node and annotation types.
  * `relations.int.csv` String representations for each relation.
  
 ## RDF Data
