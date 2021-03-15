@@ -11,3 +11,7 @@ Literals Unique: 581150
 [DTYPE] http://www.w3.org/2001/XMLSchema#positiveInteger: 659
 [DTYPE] http://kgbench.info/dt#base64Image: 58846
 [DTYPE] http://www.w3.org/2001/XMLSchema#boolean: 8838
+- degree: min 1 / max 121217 / avg 4.464643
+- in degree: min 0 / max 121217 / avg 2.232322
+- out degree: min 0 / max 559 / avg 2.232322
+- density: 0.000003

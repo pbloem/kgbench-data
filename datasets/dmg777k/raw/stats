@@ -11,3 +11,7 @@ Literals Unique: 195468
 [DTYPE] http://www.w3.org/2001/XMLSchema#gYear: 1800
 [DTYPE] http://www.w3.org/2001/XMLSchema#nonNegativeInteger: 8396
 [DTYPE] http://www.w3.org/2001/XMLSchema#positiveInteger: 510
+- degree: min 1 / max 65576 / avg 4.528484
+- in degree: min 0 / max 65576 / avg 2.264242
+- out degree: min 0 / max 559 / avg 2.264242
+- density: 0.000007
