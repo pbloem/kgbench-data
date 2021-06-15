@@ -2,11 +2,13 @@ import fire, sys, tqdm
 
 import kgbench as kg
 
+from collections import Counter
+
 """
 Load a dataset and print statistics.
 """
 
-def go(name='dblp'):
+def go(name='amplus'):
 
     kg.load(name)
 
@@ -36,8 +38,26 @@ def go(name='dblp'):
     print(f'{data.withheld.shape[0]} test instances.')
     print()
 
+    print('Nr of edges between two nodes:')
+    ctr = Counter()
+
+    # count edge frequencies
+    for s, _, o in data.triples:
+        ctr[(s,o)] += 1
+
+    # count frequency frequencies
+    fctr = Counter()
+    for pair, freq in ctr.items():
+        fctr[freq] += 1
+
+    for freq in sorted(list(fctr.keys())):
+        print(freq, fctr[freq])
+
+    print()
+
+    print('Relations:')
     for rel in data.i2r:
-        print(rel)
+        print(' ', rel)
 
 
 if __name__ == '__main__':
