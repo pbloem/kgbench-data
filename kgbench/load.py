@@ -210,7 +210,7 @@ def load(name, final=False, torch=False, prune_dist=None):
     """
     Returns the requested dataset.
 
-    :param name: One of amfull, am1k, wd-people
+    :param name: One of the available datasets
     :param final: Loads the test/train split instead of the validation train split. In this case the training data
     consists of both training and validation.
     :return: A pair (triples, meta). `triples` is a numpy 2d array of datatype uint32 contianing integer-encoded
@@ -224,7 +224,7 @@ def load(name, final=False, torch=False, prune_dist=None):
         return micro(final, torch)
         # -- a miniature dataset for unit testing
 
-    if name in ['aifb', 'am1k', 'amplus', 'dblp', 'mdgenre', 'mdgender', 'dmgfull', 'dmg832k']:
+    if name in ['aifb', 'am1k', 'amplus', 'dblp', 'mdgenre', 'mdgender', 'dmgfull', 'dmg777k']:
         tic()
         data = Data(here(f'../datasets/{name}'), final=final, use_torch=torch)
         print(f'loaded data {name} ({toc():.4}s).')
