@@ -1,11 +1,8 @@
 from .util import here, tic, toc
 import numpy as np
-import os
-from os.path import join as j
+from os.path import join
 import pandas as pd
 import gzip, base64, io, sys, warnings
-
-from skimage import io as skio
 
 import torch
 
@@ -19,6 +16,9 @@ TODO:
 
 
 """
+
+_XSD_NS = "http://www.w3.org/2001/XMLSchema#"
+
 
 class Data:
     """
@@ -73,18 +73,18 @@ class Data:
 
             self.torch = use_torch
 
-            self.triples = fastload(j(dir, 'triples.int.csv.gz'))
+            self.triples = fastload(join(dir, 'triples.int.csv.gz'))
 
-            self.i2r, self.r2i = load_indices(j(dir, 'relations.int.csv'))
-            self.i2e, self.e2i = load_entities(j(dir, 'nodes.int.csv'))
+            self.i2r, self.r2i = load_indices(join(dir, 'relations.int.csv'))
+            self.i2e, self.e2i = load_entities(join(dir, 'nodes.int.csv'))
 
             self.num_entities  = len(self.i2e)
             self.num_relations = len(self.i2r)
 
             train, val, test = \
-                np.loadtxt(j(dir, 'training.int.csv'),   dtype=np.int, delimiter=',', skiprows=1), \
-                np.loadtxt(j(dir, 'validation.int.csv'), dtype=np.int, delimiter=',', skiprows=1), \
-                np.loadtxt(j(dir, 'testing.int.csv'),    dtype=np.int, delimiter=',', skiprows=1)
+                np.loadtxt(join(dir, 'training.int.csv'),   dtype=np.int, delimiter=',', skiprows=1), \
+                np.loadtxt(join(dir, 'validation.int.csv'), dtype=np.int, delimiter=',', skiprows=1), \
+                np.loadtxt(join(dir, 'testing.int.csv'),    dtype=np.int, delimiter=',', skiprows=1)
 
             if final and catval:
                 self.training = np.concatenate([train, val], axis=0)
@@ -150,7 +150,10 @@ class Data:
         :return: A dict d so that `d[global_index] = local_index`
         """
         if dtype not in self._dt_l2g:
-            self._dt_l2g[dtype] = [i for i, (label, dt) in enumerate(self.i2e) if dt == dtype]
+            self._dt_l2g[dtype] = [i for i, (label, dt) in enumerate(self.i2n)
+                                   if dt == dtype
+                                   or (dtype == _XSD_NS+"string"
+                                       and dt.startswith('@'))]
             self._dt_g2l[dtype] = {g: l for l, g in enumerate(self._dt_l2g[dtype])}
 
         return dict(self._dt_g2l[dtype]) if copy else self._dt_g2l[dtype]
