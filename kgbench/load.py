@@ -209,8 +209,13 @@ class Data:
 
         train_idx, train_y = self.training[:, 0], self.training[:, 1]
         test_idx, test_y = self.withheld[:, 0], self.withheld[:, 1]
-        edge_type = torch.hstack((self.triples[:, 1].T, 2 * self.triples[:, 1].T + 1))
-        edge_index = torch.hstack((self.triples[:, [0, 2]].T, self.triples[:, [2, 0]].T))
+
+        if add_inverse:
+            edge_type = torch.hstack((self.triples[:, 1].T, 2 * self.triples[:, 1].T + 1))
+            edge_index = torch.hstack((self.triples[:, [0, 2]].T, self.triples[:, [2, 0]].T))
+        else:
+            edge_type = self.triples[:, 1].T
+            edge_index = self.triples[:, [0, 2]].T
 
         data = PygData(edge_index=edge_index, edge_type=edge_type,
                 train_idx=train_idx, train_y=train_y, test_idx=test_idx,
