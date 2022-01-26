@@ -211,7 +211,7 @@ class Data:
         test_idx, test_y = self.withheld[:, 0], self.withheld[:, 1]
 
         if add_inverse:
-            edge_type = torch.hstack((self.triples[:, 1].T, 2 * self.triples[:, 1].T + 1))
+            edge_type = torch.hstack((2 * self.triples[:, 1].T, 2 * self.triples[:, 1].T + 1))
             edge_index = torch.hstack((self.triples[:, [0, 2]].T, self.triples[:, [2, 0]].T))
         else:
             edge_type = self.triples[:, 1].T
