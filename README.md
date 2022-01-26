@@ -15,12 +15,12 @@ We offer a set of node classification benchmark tasks on relational data, with t
 
 ### Clone or download the repository
 
-To clone the repository from git, [Git LFS](https://git-lfs.github.com/) must be installed. On any linux system that uses apt (including Google colab), use the command
+To clone the repository from Github, [Git LFS](https://git-lfs.github.com/) must be installed. On any linux system that uses apt (including Google colab), use the command
 
 ```
 sudo apt-get install git-lfs
 ```
-For other OSs, see the git LFS instructions.
+For other OSs, see the Git LFS instructions.
 
 Then clone with
 
