@@ -220,7 +220,8 @@ class Data:
         data = PygData(edge_index=edge_index, edge_type=edge_type,
                 train_idx=train_idx, train_y=train_y, test_idx=test_idx,
                 test_y=test_y, num_nodes=self.num_entities)
-        data.num_relations = 2 * self.num_relations
+
+        data.num_relations = 2 * self.num_relations if add_inverse else self.num_relations
 
         return data
 
