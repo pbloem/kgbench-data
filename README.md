@@ -13,7 +13,25 @@ We offer a set of node classification benchmark tasks on relational data, with t
 
 ## Installation
 
-Download or clone the repository. In the root directory (where `setup.py` is located), run 
+### Clone or download the repository
+
+To clone the repository from git, [Git LFS](https://git-lfs.github.com/) must be installed. On any linux system that uses apt (including Google colab), use the command
+
+```
+sudo apt-get install git-lfs
+```
+For other OSs, see the git LFS instructions.
+
+Then clone with
+
+```git lfs clone git@github.com:pbloem/kgbench.git```
+
+Alternatively, you can download the repository instead of cloning it. 
+
+### Getthe data & code
+
+In the root directory (where `setup.py` is located), run 
+
 ```
 pip install . 
 ```
