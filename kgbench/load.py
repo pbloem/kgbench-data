@@ -150,7 +150,7 @@ class Data:
         :return: A dict d so that `d[global_index] = local_index`
         """
         if dtype not in self._dt_l2g:
-            self._dt_l2g[dtype] = [i for i, (label, dt) in enumerate(self.i2n)
+            self._dt_l2g[dtype] = [i for i, (label, dt) in enumerate(self.i2e)
                                    if dt == dtype
                                    or (dtype == _XSD_NS+"string"
                                        and dt.startswith('@'))]
