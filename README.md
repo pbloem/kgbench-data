@@ -65,8 +65,8 @@ The following are the most important attributes of the `data` object:
 These are all the attributes required to implement a classifier for the **relational setting**. That is, the setting where literals are treated as atomic nodes. In the **multimodal setting**, where the content of literals is also taken into account, the following attributes and methods can also be used.
 
  * `data.i2r, data.r2i` A list and dictionary respectively, mapping relation indices to string representations of the relation (or predicate). 
- * `data.i2n` A mapping from an integer index to a node representation: a pair indicating the annotation and the label (in that order). Annotations can be 'iri', 'blank_node', 'none' (untagged literal) a language tag, or a datatype IRI.
- * `data.n2i` The inverse mapping of `data.i2n`. Note that the keys are pairs.
+ * `data.i2e` A mapping from an integer index to a node representation: a pair indicating the annotation and the label (in that order). Annotations can be 'iri', 'blank_node', 'none' (untagged literal) a language tag, or a datatype IRI.
+ * `data.e2i` The inverse mapping of `data.i2n`. Note that the keys are pairs.
  * `data.datatype_g2l(dtype)` Returns a list mapping a global index of an entity (the indexing over all nodes) to its _local index_ the indexing over all nodes of the given datatype.
  * `data.datatype_l2g(dtype)` Maps local to global indices.
  * `data.get_images()` Returns the images in the dataset (in order of local index) as a list of PIL image objects. Utility function are provided to process and batch these (see the mrgcn experiment for an example).
