@@ -194,6 +194,37 @@ class Data:
 
         return self._datatypes[i]
 
+    def pyg(self, add_inverse=True):
+        """
+        Returns a PyG data object KG 
+
+        :param add_inverse: If True, adds inverse edges for all edges in the graph, with a associated inverse relation types 
+                            (same as the default behaviour in PyG for RDF graphs)
+        :return: PyG data object
+        """
+        assert self.torch, 'Data must be loaded with torch=True to generate PyG data object'
+
+        # Optional import
+        from torch_geometric.data import Data as PygData
+
+        train_idx, train_y = self.training[:, 0], self.training[:, 1]
+        test_idx, test_y = self.withheld[:, 0], self.withheld[:, 1]
+
+        if add_inverse:
+            edge_type = torch.hstack((2 * self.triples[:, 1].T, 2 * self.triples[:, 1].T + 1))
+            edge_index = torch.hstack((self.triples[:, [0, 2]].T, self.triples[:, [2, 0]].T))
+        else:
+            edge_type = self.triples[:, 1].T
+            edge_index = self.triples[:, [0, 2]].T
+
+        data = PygData(edge_index=edge_index, edge_type=edge_type,
+                train_idx=train_idx, train_y=train_y, test_idx=test_idx,
+                test_y=test_y, num_nodes=self.num_entities)
+
+        data.num_relations = 2 * self.num_relations if add_inverse else self.num_relations
+
+        return data
+
 SPECIAL = {'iri':'0', 'blank_node':'1', 'none':'2'}
 def datatype_key(string):
     """
