@@ -5,6 +5,7 @@ import pandas as pd
 import gzip, base64, io, sys, warnings
 
 import torch
+from deprecated import deprecated
 
 """
 Data loading utilities
@@ -19,6 +20,7 @@ TODO:
 
 _XSD_NS = "http://www.w3.org/2001/XMLSchema#"
 
+@deprecated('This package is deprecated please use the version at https://github.com/pbloem/kgbench-loader')
 
 class Data:
     """
