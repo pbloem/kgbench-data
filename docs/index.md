@@ -1,4 +1,3 @@
-
 # kgbench
 
 A set of benchmark repositories for node classification on knowledge graphs. Paper:
@@ -14,14 +13,16 @@ We offer a set of node classification benchmark tasks on relational data, with t
 
 ## Installation
 
-Download or clone the repository. In the root directory (where `setup.py` is located), run 
+Download or clone the repository https://github.com/pbloem/kgbench-loader. In the root directory (where `setup.py` is located), run 
 ```
 pip install . 
 ```
 
+_Please do not use the `kgbench-data` repository, only use the `kgbench-loader`. The former should only be used to study how the data was created._
+
 ## Loading data in python
 
-The following snippet loads the `amfull` dataset
+The following snippet loads the `amplus` dataset
 
 ```python
 import kgbench as kg
@@ -31,7 +32,6 @@ data = kg.load('amplus') # Load with numpy arrays, and train/validation split
 data = kg.load('amplus', torch=True) # Load with pytorch arrays
 
 data = kg.load('amplus', final=True) # Load with numpy arrays and train/test split
-
 ``` 
 
 The `data` object contains all relevant information contained in the dataset, preprocessed for direct use in pytorch or in any numpy-based machine learning framework.
@@ -54,6 +54,8 @@ These are all the attributes required to implement a classifier for the **relati
  * `data.datatype_l2g(dtype)` Maps local to global indices.
  * `data.get_images()` Returns the images in the dataset (in order of local index) as a list of PIL image objects. Utility function are provided to process and batch these (see the mrgcn experiment for an example).
 
+The `scripts` directory contains the scripts needed to convert any RDF knowledge graph to the format listed above, allowing it to be imported using the kgbench dataloader.
+
 ## Experiments
 
 Three example baselines are implemented in the directory `experiments`. These should give a fairly complete idea of the way the library can be used. See the paper for model details. 
@@ -67,6 +69,7 @@ Each datasets is laid out in the following files:
  * `training.int.csv`, `validation.int.csv` , `testing.int.csv` The node labels. The first column is the node index, the second is the class. Note that these CSV files have headers.
  * `meta-testing.int.csv` Metatesting split. You probably don't need to touch this.
  * `nodes.int.csv` String representations and annotations for each node index.
+ * `nodetypes.int.csv` Indexed node and annotation types.
  * `relations.int.csv` String representations for each relation.
  
 ## RDF Data
@@ -86,7 +89,7 @@ The following benchmark datasets are available. See the paper for more extensive
  * `amplus` Extended version of the AM data
  * `dblp` Subset of the DBLP database, enriched with author information from Wikidata
  * `dmgfull` Monuments in the Netherlands.
- * `dmg832k` Subset of `dmgfull`
+ * `dmg777k` Subset of `dmgfull`
  * `mdgenre` Movie data extracted from Wikidata
  
 The following datasets are available for unit testing:
@@ -103,7 +106,7 @@ We define the following datatypes:
  
  * [http://kgbench.info/dt#base64Image](http://kgbench.info/dt.ttl) An image encoded as a base64 string. 
  * [http://kgbench.info/dt#base64Audio](http://kgbench.info/dt.ttl) An audio sequence encoded as a base64 string.
- * [http://kgbench.info/dt#base64Video](http://kgbench.info/dt.ttl) A video encoded as a base64String.
+ * [http://kgbench.info/dt#base64Video](http://kgbench.info/dt.ttl) A video encoded as a base64 string.
 
 In most cases this information is sufficient to correctly decode the byte-level information. To provide a fully unambiguous definition of how a literal should be decoded, it is necessary also to specify its MIME-type. This can be done by adding extra statements to the graph, but this is outside the scope of the `kgbench` project. 
 
