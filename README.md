@@ -13,28 +13,12 @@ We offer a set of node classification benchmark tasks on relational data, with t
 
 ## Installation
 
-### Clone or download the repository
-
-To clone the repository from Github, [Git LFS](https://git-lfs.github.com/) must be installed. On any linux system that uses apt (including Google colab), use the command
-
-```
-sudo apt-get install git-lfs
-```
-For other OSs, see the Git LFS instructions.
-
-Then clone with
-
-```git lfs clone git@github.com:pbloem/kgbench.git```
-
-Alternatively, you can download the repository instead of cloning it. 
-
-### Getthe data & code
-
-In the root directory (where `setup.py` is located), run 
-
+Download or clone the repository https://github.com/pbloem/kgbench-loader. In the root directory (where `setup.py` is located), run 
 ```
 pip install . 
 ```
+
+_Please do not use the `kgbench-data` repository, only use the `kgbench-loader`. The former should only be used to study how the data was created._
 
 ## Loading data in python
 
@@ -48,7 +32,6 @@ data = kg.load('amplus') # Load with numpy arrays, and train/validation split
 data = kg.load('amplus', torch=True) # Load with pytorch arrays
 
 data = kg.load('amplus', final=True) # Load with numpy arrays and train/test split
-
 ``` 
 
 The `data` object contains all relevant information contained in the dataset, preprocessed for direct use in pytorch or in any numpy-based machine learning framework.
@@ -65,8 +48,8 @@ The following are the most important attributes of the `data` object:
 These are all the attributes required to implement a classifier for the **relational setting**. That is, the setting where literals are treated as atomic nodes. In the **multimodal setting**, where the content of literals is also taken into account, the following attributes and methods can also be used.
 
  * `data.i2r, data.r2i` A list and dictionary respectively, mapping relation indices to string representations of the relation (or predicate). 
- * `data.i2e` A mapping from an integer index to a node representation: a pair indicating the annotation and the label (in that order). Annotations can be 'iri', 'blank_node', 'none' (untagged literal) a language tag, or a datatype IRI.
- * `data.e2i` The inverse mapping of `data.i2n`. Note that the keys are pairs.
+ * `data.i2n` A mapping from an integer index to a node representation: a pair indicating the annotation and the label (in that order). Annotations can be 'iri', 'blank_node', 'none' (untagged literal) a language tag, or a datatype IRI.
+ * `data.n2i` The inverse mapping of `data.i2n`. Note that the keys are pairs.
  * `data.datatype_g2l(dtype)` Returns a list mapping a global index of an entity (the indexing over all nodes) to its _local index_ the indexing over all nodes of the given datatype.
  * `data.datatype_l2g(dtype)` Maps local to global indices.
  * `data.get_images()` Returns the images in the dataset (in order of local index) as a list of PIL image objects. Utility function are provided to process and batch these (see the mrgcn experiment for an example).
